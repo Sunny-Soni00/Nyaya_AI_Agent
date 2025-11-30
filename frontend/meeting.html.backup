@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nyaya-Sahayak | Meeting Room</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #1a1a1a;
+            color: #fff;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .container {
+            display: flex;
+            height: 100vh;
+        }
+
+        /* Left Sidebar - Participants and Tabs */
+        .participants-sidebar {
+            width: 280px;
+            background: #2d2d2d;
+            border-right: 1px solid #3a3a3a;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid #3a3a3a;
+        }
+
+        .meeting-id-display {
+            background: #3a3a3a;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .meeting-id-display .label {
+            font-size: 12px;
+            color: #888;
+            margin-bottom: 5px;
+        }
+
+        .meeting-id-display .id {
+            font-size: 24px;
+            font-weight: 700;
+            color: #4a90e2;
+            letter-spacing: 2px;
+        }
+
+        .participants-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+        }
+
+        .participant-item {
+            padding: 12px;
+            margin-bottom: 8px;
+            background: #3a3a3a;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .participant-item.speaking {
+            border: 2px solid #27ae60;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(39, 174, 96, 0.7); }
+            50% { box-shadow: 0 0 0 10px rgba(39, 174, 96, 0); }
+        }
+
+        .participant-avatar {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            background: #4a90e2;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+        }
+
+        .participant-info {
+            flex: 1;
+        }
+
+        .participant-name {
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .participant-status {
+            font-size: 11px;
+            color: #888;
+        }
+
+        .host-badge {
+            background: #f39c12;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 600;
+        }
+
+        /* Main Content Area */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header */
+        .header {
+            background: #2d2d2d;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #3a3a3a;
+        }
+
+        .logo {
+            font-size: 20px;
+            font-weight: 600;
+            color: #4a90e2;
+        }
+
+        .header-controls {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .user-info {
+            background: #3a3a3a;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+        }
+
+        .leave-btn {
+            background: #e74c3c;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            color: white;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .leave-btn:hover {
+            background: #c0392b;
+        }
+
+        /* Video Section */
+        .video-section {
+            background: #1a1a1a;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .video-container {
+            position: relative;
+            background: #2d2d2d;
+            border-radius: 12px;
+            overflow: hidden;
+            aspect-ratio: 16/9;
+        }
+
+        .video-container video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .video-placeholder {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .video-label {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 5px 12px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .video-muted {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(231, 76, 60, 0.9);
+            padding: 5px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+        }
+
+        /* Main workspace area */
+        .workspace {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+        }
+
+        /* Left panel - Transcript/Evidence/Chat */
+        .left-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: #2d2d2d;
+            border-right: 1px solid #3a3a3a;
+        }
+
+        .panel-header {
+            display: flex;
+            gap: 2px;
+            background: #1a1a1a;
+            padding: 10px;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 12px;
+            background: transparent;
+            border: none;
+            color: #888;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s;
+            border-radius: 6px;
+        }
+
+        .tab:hover {
+            background: #2d2d2d;
+            color: #fff;
+        }
+
+        .tab.active {
+            background: #4a90e2;
+            color: white;
+        }
+
+        .panel-content {
+            flex: 1;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .transcript-view {
+            height: 100%;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .transcript-item {
+            background: #3a3a3a;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            border-left: 4px solid #4a90e2;
+        }
+
+        .transcript-time {
+            font-size: 12px;
+            color: #888;
+            margin-bottom: 8px;
+        }
+
+        .transcript-text {
+            line-height: 1.6;
+            color: #e0e0e0;
+        }
+
+        .interim-text {
+            background: #2d2d2d;
+            padding: 12px;
+            margin: 10px 20px;
+            border-radius: 6px;
+            color: #888;
+            font-style: italic;
+            border-left: 3px solid #f39c12;
+        }
+
+        .chat-section {
+            display: none;
+            height: 100%;
+            flex-direction: column;
+        }
+
+        .chat-section.active {
+            display: flex;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .chat-message {
+            margin-bottom: 15px;
+            display: flex;
+        }
+
+        .chat-message.user {
+            justify-content: flex-end;
+        }
+
+        .chat-bubble {
+            max-width: 70%;
+            padding: 12px 16px;
+            border-radius: 12px;
+            line-height: 1.5;
+        }
+
+        .chat-message.user .chat-bubble {
+            background: #4a90e2;
+            color: white;
+        }
+
+        .chat-message.assistant .chat-bubble {
+            background: #3a3a3a;
+            color: #e0e0e0;
+        }
+
+        .chat-input-container {
+            padding: 15px;
+            background: #1a1a1a;
+            border-top: 1px solid #3a3a3a;
+            display: flex;
+            gap: 10px;
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 12px;
+            background: #2d2d2d;
+            border: 1px solid #3a3a3a;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 14px;
+        }
+
+        .send-btn {
+            background: #4a90e2;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            color: white;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .send-btn:hover {
+            background: #357abd;
+        }
+
+        /* Control Panel */
+        .control-panel {
+            background: #2d2d2d;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            border-top: 1px solid #3a3a3a;
+        }
+
+        .control-btn {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            font-size: 24px;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .mic-btn {
+            background: #4a90e2;
+        }
+
+        .mic-btn:hover {
+            background: #357abd;
+            transform: scale(1.1);
+        }
+
+        .mic-btn.active {
+            background: #e74c3c;
+            animation: recording 1.5s infinite;
+        }
+
+        @keyframes recording {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.7); }
+            50% { box-shadow: 0 0 0 15px rgba(231, 76, 60, 0); }
+        }
+
+        .camera-btn {
+            background: #27ae60;
+        }
+
+        .camera-btn:hover {
+            background: #229954;
+            transform: scale(1.1);
+        }
+
+        .camera-btn.off {
+            background: #95a5a6;
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #2d2d2d;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #4a4a4a;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #5a5a5a;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Participants Sidebar -->
+        <div class="participants-sidebar">
+            <div class="sidebar-header">
+                <div class="meeting-id-display">
+                    <div class="label">Meeting ID</div>
+                    <div class="id" id="meetingIdDisplay">------</div>
+                </div>
+                <div style="text-align: center; font-size: 14px; color: #888;">
+                    <span id="participantCount">0</span> Participants
+                </div>
+            </div>
+            <div class="participants-list" id="participantsList">
+                <!-- Participants will be added here dynamically -->
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Header -->
+            <div class="header">
+                <div class="logo">⚖️ Nyaya-Sahayak</div>
+                <div class="header-controls">
+                    <div class="user-info">
+                        <span id="userName">User</span>
+                    </div>
+                    <button class="leave-btn" onclick="leaveMeeting()">
+                        Leave Meeting
+                    </button>
+                </div>
+            </div>
+
+            <!-- Video Section -->
+            <div class="video-section" id="videoSection">
+                <!-- My Video -->
+                <div class="video-container">
+                    <video id="myVideo" autoplay muted playsinline></video>
+                    <div class="video-label">You</div>
+                </div>
+                <!-- Other participants' videos will be added here -->
+            </div>
+
+            <!-- Workspace -->
+            <div class="workspace">
+                <div class="left-panel">
+                    <div class="panel-header">
+                        <button class="tab active" data-tab="transcript">📝 Transcript</button>
+                        <button class="tab" data-tab="evidence">📁 Evidence</button>
+                        <button class="tab" data-tab="chat">💬 AI Assistant</button>
+                    </div>
+
+                    <div class="panel-content">
+                        <!-- Transcript View (continued in next part...) -->
+                        <div id="transcript-view" class="transcript-view">
+                            <div style="text-align: center; color: #888; padding: 40px 20px;">
+                                <p>Click the microphone button to start recording</p>
+                                <p style="font-size: 12px; margin-top: 10px;">Real-time transcription will appear here</p>
+                            </div>
+                            <div id="interimText" class="interim-text" style="display: none;"></div>
+                        </div>
+
+                        <!-- Evidence View -->
+                        <div id="evidence-view" class="chat-section">
+                            <div style="padding: 20px;">
+                                <h3 style="margin-bottom: 15px;">📁 Evidence Upload</h3>
+                                <p style="color: #888; font-size: 14px; margin-bottom: 20px;">
+                                    Upload PDFs, images, or audio files. Audio will be transcribed automatically.
+                                                </p>
+                                
+                                <div style="background: #3a3a3a; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                                    <input type="file" id="evidenceFiles" multiple 
+                                           accept=".pdf,.jpg,.jpeg,.png,.bmp,.tiff,.mp3,.wav,.m4a,.ogg,.webm" 
+                                           style="display: block; margin-bottom: 15px; color: #fff;">
+                                    <button id="uploadBtn" style="background: #4a90e2; border: none; padding: 10px 20px; 
+                                            border-radius: 6px; color: white; cursor: pointer; font-weight: 500;">
+                                        Upload Evidence
+                                    </button>
+                                    <div id="uploadStatus" style="margin-top: 10px; font-size: 14px;"></div>
+                                </div>
+                                
+                                <h4 style="margin-bottom: 10px;">Uploaded Files:</h4>
+                                <div id="evidenceList" style="background: #2d2d2d; padding: 15px; border-radius: 8px; 
+                                        min-height: 100px; max-height: 300px; overflow-y: auto;">
+                                    <p style="color: #888; text-align: center;">No evidence uploaded yet</p>
+                                </div>
+                                
+                                <button id="clearEvidenceBtn" style="background: #e74c3c; border: none; padding: 8px 16px; 
+                                        border-radius: 6px; color: white; cursor: pointer; margin-top: 15px;">
+                                    Clear All Evidence
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- AI Chat View -->
+                        <div id="chat-view" class="chat-section">
+                            <div class="chat-messages" id="chatMessages">
+                                <div style="text-align: center; color: #888; padding: 20px;">
+                                    <p>💬 Ask questions about the transcript and evidence</p>
+                                    <p style="font-size: 12px; margin-top: 10px;">
+                                        The AI has access to both the live transcript and uploaded evidence files
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="chat-input-container">
+                                <input type="text" class="chat-input" id="chatInput" 
+                                       placeholder="Ask about the session or evidence...">
+                                <button class="send-btn" id="sendBtn">Send</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Control Panel -->
+            <div class="control-panel">
+                <button class="control-btn mic-btn" id="micBtn" title="Microphone">
+                    🎤
+                </button>
+                <button class="control-btn camera-btn" id="cameraBtn" title="Camera">
+                    📹
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Get session data
+        const userData = JSON.parse(sessionStorage.getItem('user') || '{}');
+        const meetingId = sessionStorage.getItem('meeting_id');
+        const isHost = sessionStorage.getItem('is_host') === 'true';
+
+        if (!userData.user_id || !meetingId) {
+            alert('Session expired. Please login again.');
+            window.location.href = 'login.html';
+        }
+
+        // Display user info
+        document.getElementById('userName').textContent = userData.name;
+        document.getElementById('meetingIdDisplay').textContent = meetingId;
+
+        // Variables
+        let isRecording = false;
+        let isCameraOn = false;
+        let transcribeWs = null;
+        let chatWs = null;
+        let audioContext = null;
+        let localStream = null;
+        let voiceDetectionTimer = null;
+
+        // DOM Elements
+        const micBtn = document.getElementById('micBtn');
+        const cameraBtn = document.getElementById('cameraBtn');
+        const transcriptView = document.getElementById('transcript-view');
+        const evidenceView = document.getElementById('evidence-view');
+        const chatView = document.getElementById('chat-view');
+        const interimTextDiv = document.getElementById('interimText');
+        const chatMessages = document.getElementById('chatMessages');
+        const chatInput = document.getElementById('chatInput');
+        const sendBtn = document.getElementById('sendBtn');
+        const myVideo = document.getElementById('myVideo');
+
+        // Tab switching
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                
+                const tabName = tab.dataset.tab;
+                transcriptView.style.display = tabName === 'transcript' ? 'block' : 'none';
+                evidenceView.classList.toggle('active', tabName === 'evidence');
+                chatView.classList.toggle('active', tabName === 'chat');
+                
+                if (tabName === 'evidence') {
+                    loadEvidenceList();
+                }
+            });
+        });
+
+        // Initialize camera
+        async function initCamera() {
+            try {
+                localStream = await navigator.mediaDevices.getUserMedia({ 
+                    video: true, 
+                    audio: false 
+                });
+                myVideo.srcObject = localStream;
+                isCameraOn = true;
+                cameraBtn.classList.remove('off');
+            } catch (error) {
+                console.error('Camera access denied:', error);
+                myVideo.closest('.video-container').querySelector('.video-label').textContent = 'You (No Camera)';
+                const placeholder = document.createElement('div');
+                placeholder.className = 'video-placeholder';
+                placeholder.textContent = '📷';
+                myVideo.parentNode.replaceChild(placeholder, myVideo);
+            }
+        }
+
+        // Toggle camera
+        cameraBtn.addEventListener('click', () => {
+            if (localStream) {
+                const videoTrack = localStream.getVideoTracks()[0];
+                if (videoTrack) {
+                    videoTrack.enabled = !videoTrack.enabled;
+                    isCameraOn = videoTrack.enabled;
+                    cameraBtn.classList.toggle('off', !isCameraOn);
+                }
+            }
+        });
+
+        // Load participants
+        async function loadParticipants() {
+            try {
+                const response = await fetch(`http://localhost:8000/meeting/${meetingId}/participants`);
+                const data = await response.json();
+                
+                const participantsList = document.getElementById('participantsList');
+                const participantCount = document.getElementById('participantCount');
+                
+                participantCount.textContent = data.participants.length;
+                
+                participantsList.innerHTML = data.participants.map(p => `
+                    <div class="participant-item${p.is_speaking ? ' speaking' : ''}" data-user-id="${p.user_id}">
+                        <div class="participant-avatar">${p.name.charAt(0).toUpperCase()}</div>
+                        <div class="participant-info">
+                            <div class="participant-name">
+                                ${p.name}
+                                ${p.user_id === data.meeting_id ? '<span class="host-badge">HOST</span>' : ''}
+                                ${p.user_id === userData.user_id ? ' (You)' : ''}
+                            </div>
+                            <div class="participant-status">
+                                ${p.is_speaking ? '🎤 Speaking...' : 'In meeting'}
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Failed to load participants:', error);
+            }
+        }
+
+        // Leave meeting
+        function leaveMeeting() {
+            if (confirm('Are you sure you want to leave the meeting?')) {
+                if (transcribeWs) transcribeWs.close();
+                if (chatWs) chatWs.close();
+                if (localStream) {
+                    localStream.getTracks().forEach(track => track.stop());
+                }
+                sessionStorage.clear();
+                window.location.href = 'login.html';
+            }
+        }
+
+        // Initialize
+        initCamera();
+        loadParticipants();
+        setInterval(loadParticipants, 5000); // Refresh participants every 5 seconds
+
+        // Continue with existing transcript/evidence/chat functionality...
+        // (I'll add this in the next part)
+    </script>
+</body>
+</html>

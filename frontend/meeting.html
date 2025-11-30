@@ -1,0 +1,1047 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nyaya-Sahayak | Meeting Room</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #1a1a1a;
+            color: #fff;
+            height: 100vh;
+            overflow: hidden;
+        }
+        .container { display: flex; height: 100vh; }
+        
+        /* Left Sidebar */
+        .left-sidebar {
+            width: 280px;
+            background: #2d2d2d;
+            border-right: 1px solid #3a3a3a;
+            display: flex;
+            flex-direction: column;
+        }
+        .sidebar-header { padding: 20px; border-bottom: 1px solid #3a3a3a; }
+        .logo { font-size: 18px; font-weight: 600; color: #4a90e2; margin-bottom: 15px; }
+        .meeting-id-display {
+            background: #3a3a3a;
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .meeting-id-display .label { font-size: 10px; color: #888; margin-bottom: 5px; }
+        .meeting-id-display .id { font-size: 18px; font-weight: 700; color: #4a90e2; letter-spacing: 2px; }
+        
+        .participants-section { padding: 15px; border-bottom: 1px solid #3a3a3a; }
+        .section-title {
+            font-size: 12px;
+            color: #ffffff;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .participant-count {
+            background: #4a90e2;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 10px;
+            font-weight: 600;
+        }
+        .participants-list { max-height: 150px; overflow-y: auto; }
+        .participant-item {
+            padding: 8px;
+            margin-bottom: 5px;
+            background: #3a3a3a;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+        }
+        .participant-avatar {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: #4a90e2;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 11px;
+        }
+        .host-badge {
+            background: #f39c12;
+            padding: 1px 5px;
+            border-radius: 3px;
+            font-size: 9px;
+            font-weight: 600;
+            margin-left: 4px;
+        }
+        
+        .tabs-container { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+        .tab-buttons { display: flex; gap: 2px; background: #1a1a1a; padding: 8px; }
+        .tab-btn {
+            flex: 1;
+            padding: 8px;
+            background: transparent;
+            border: none;
+            color: #888;
+            cursor: pointer;
+            font-size: 11px;
+            transition: all 0.3s;
+            border-radius: 5px;
+        }
+        .tab-btn:hover { background: #2d2d2d; color: #fff; }
+        .tab-btn.active { background: #4a90e2; color: white; }
+        
+        .tab-content { flex: 1; overflow: hidden; }
+        .tab-panel { display: none; height: 100%; overflow-y: auto; padding: 12px; }
+        .tab-panel.active { display: block; }
+        
+        /* Transcript */
+        .transcript-item { margin-bottom: 12px; animation: slideIn 0.3s ease; }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+        .transcript-time { font-size: 10px; color: #888; margin-bottom: 3px; }
+        .transcript-speaker { font-size: 10px; color: #4a90e2; font-weight: 600; margin-bottom: 2px; }
+        .transcript-text { background: #3a3a3a; padding: 8px; border-radius: 5px; line-height: 1.4; font-size: 12px; }
+        .interim-text { color: #888; font-style: italic; padding: 6px; border-left: 2px solid #4a90e2; margin-left: 8px; font-size: 11px; }
+        
+        /* Evidence */
+        .upload-section { background: #3a3a3a; padding: 12px; border-radius: 6px; margin-bottom: 12px; }
+        .upload-section h4 { font-size: 12px; margin-bottom: 8px; }
+        .upload-section input[type="file"] { display: block; margin-bottom: 8px; color: #fff; font-size: 11px; }
+        .upload-btn { background: #4a90e2; border: none; padding: 6px 12px; border-radius: 5px; color: white; cursor: pointer; font-size: 11px; }
+        .upload-btn:hover { background: #357abd; }
+        .evidence-list { background: #3a3a3a; padding: 8px; border-radius: 6px; max-height: 250px; overflow-y: auto; }
+        .evidence-item { padding: 6px; border-bottom: 1px solid #2d2d2d; display: flex; align-items: center; gap: 6px; font-size: 11px; }
+        .evidence-item:last-child { border-bottom: none; }
+        .evidence-item button:hover { transform: scale(1.2); transition: transform 0.2s; }
+        
+        /* Chat */
+        .chat-messages { flex: 1; overflow-y: auto; padding: 8px; min-height: 150px; }
+        .chat-message { margin-bottom: 10px; }
+        .chat-message.user { text-align: right; }
+        .chat-bubble {
+            display: inline-block;
+            max-width: 85%;
+            padding: 8px 10px;
+            border-radius: 8px;
+            margin-bottom: 3px;
+            font-size: 11px;
+            line-height: 1.4;
+        }
+        .chat-message.user .chat-bubble { background: #4a90e2; text-align: left; }
+        .chat-message.assistant .chat-bubble { background: #3a3a3a; }
+        .chat-input-container { padding: 8px; border-top: 1px solid #3a3a3a; display: flex; gap: 6px; }
+        .chat-input { flex: 1; background: #3a3a3a; border: 1px solid #4a4a4a; border-radius: 5px; padding: 6px 10px; color: #fff; font-size: 11px; }
+        .send-btn { background: #4a90e2; border: none; padding: 6px 12px; border-radius: 5px; color: white; cursor: pointer; font-size: 11px; }
+        
+        /* Main Content */
+        .main-content { flex: 1; display: flex; flex-direction: column; }
+        .header {
+            background: #2d2d2d;
+            padding: 12px 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #3a3a3a;
+        }
+        .header-left { display: flex; align-items: center; gap: 12px; }
+        .user-info { background: #3a3a3a; padding: 5px 10px; border-radius: 12px; font-size: 12px; }
+        .status-indicator { display: flex; align-items: center; gap: 6px; font-size: 12px; }
+        .status-dot { width: 7px; height: 7px; border-radius: 50%; background: #4caf50; animation: pulse-dot 2s infinite; }
+        @keyframes pulse-dot { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        .leave-btn { background: #e74c3c; border: none; padding: 6px 14px; border-radius: 5px; color: white; cursor: pointer; font-size: 12px; }
+        .leave-btn:hover { background: #c0392b; }
+        
+        /* Video Grid - Zoom Style */
+        .video-section { 
+            padding: 20px; 
+            background: #1a1a1a;
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+        .video-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 10px;
+        }
+        .video-container {
+            position: relative;
+            background: #2d2d2d;
+            border-radius: 8px;
+            overflow: hidden;
+            width: 100%;
+            height: 240px;
+            border: 2px solid transparent;
+            transition: border-color 0.3s;
+        }
+        .video-container:hover {
+            border-color: #4a90e2;
+        }
+        .video-container video { width: 100%; height: 100%; object-fit: cover; }
+        .video-container.off video { display: none; }
+        .video-placeholder {
+            width: 100%;
+            height: 100%;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            font-size: 54px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .video-container.off .video-placeholder { display: flex; }
+        .video-label {
+            position: absolute;
+            bottom: 8px;
+            left: 8px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 4px 8px;
+            border-radius: 5px;
+            font-size: 11px;
+            z-index: 1;
+        }
+        .video-status {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            display: flex;
+            gap: 5px;
+            z-index: 1;
+        }
+        .video-status-icon {
+            background: rgba(0, 0, 0, 0.7);
+            padding: 5px 8px;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        .video-status-icon.muted { color: #e74c3c; }
+        
+        /* Controls */
+        .control-panel { background: #2d2d2d; padding: 15px; display: flex; justify-content: center; gap: 15px; border-top: 1px solid #3a3a3a; }
+        .control-btn {
+            width: 55px;
+            height: 55px;
+            border-radius: 50%;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: #3a3a3a;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+        .control-btn:hover { 
+            transform: scale(1.15) translateY(-3px); 
+            background: #4a4a4a;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+        }
+        .control-btn.active { 
+            background: #4a90e2; 
+            box-shadow: 0 0 20px rgba(74, 144, 226, 0.6);
+        }
+        .control-btn.active:hover {
+            background: #5a9ff2;
+            box-shadow: 0 4px 25px rgba(74, 144, 226, 0.8);
+            transform: scale(1.15) translateY(-3px);
+        }
+        .control-btn.off { 
+            background: #e74c3c;
+            box-shadow: 0 0 15px rgba(231, 76, 60, 0.4);
+        }
+        .control-btn.off:hover {
+            background: #f75c4c;
+            box-shadow: 0 4px 25px rgba(231, 76, 60, 0.7);
+            transform: scale(1.15) translateY(-3px);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="left-sidebar">
+            <div class="sidebar-header">
+                <div class="logo">⚖️ Nyaya-Sahayak</div>
+                <div class="meeting-id-display">
+                    <div class="label">MEETING ID</div>
+                    <div class="id" id="meetingIdDisplay">------</div>
+                </div>
+            </div>
+            <div class="participants-section">
+                <div class="section-title">
+                    <span>Participants</span>
+                    <span class="participant-count" id="participantCount">0</span>
+                </div>
+                <div class="participants-list" id="participantsList">
+                    <p style="color: #888; font-size: 11px; text-align: center;">Loading...</p>
+                </div>
+            </div>
+            <div class="tabs-container">
+                <div class="tab-buttons">
+                    <button class="tab-btn active" data-tab="transcript">📝</button>
+                    <button class="tab-btn" data-tab="evidence">📁</button>
+                    <button class="tab-btn" data-tab="chat">💬</button>
+                </div>
+                <div class="tab-content">
+                    <div class="tab-panel active" id="transcriptPanel">
+                        <div style="text-align: center; color: #888; padding: 15px 8px; font-size: 11px;">
+                            <p>Click microphone to start</p>
+                        </div>
+                        <div id="transcriptView"></div>
+                        <div id="interimText" class="interim-text" style="display: none;"></div>
+                    </div>
+                    <div class="tab-panel" id="evidencePanel">
+                        <div class="upload-section">
+                            <h4>Upload Evidence</h4>
+                            <input type="file" id="evidenceFiles" multiple accept=".pdf,.jpg,.jpeg,.png,.mp3,.wav,.m4a">
+                            <button class="upload-btn" id="uploadBtn">Upload</button>
+                            <div id="uploadStatus" style="margin-top: 6px; font-size: 10px;"></div>
+                        </div>
+                        <h4 style="font-size: 12px; margin-bottom: 6px;">Files:</h4>
+                        <div class="evidence-list" id="evidenceList">
+                            <p style="color: #888; text-align: center; font-size: 10px;">No files</p>
+                        </div>
+                    </div>
+                    <div class="tab-panel" id="chatPanel" style="display: flex; flex-direction: column; height: 100%;">
+                        <div class="chat-messages" id="chatMessages">
+                            <div style="text-align: center; color: #888; padding: 15px 8px; font-size: 10px;">
+                                <p>Ask about transcript and evidence</p>
+                            </div>
+                        </div>
+                        <div class="chat-input-container">
+                            <input type="text" class="chat-input" id="chatInput" placeholder="Ask...">
+                            <button class="send-btn" id="sendBtn">Send</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="main-content">
+            <div class="header">
+                <div class="header-left">
+                    <div class="user-info">👤 <span id="userName">Loading...</span></div>
+                    <div class="status-indicator">
+                        <div class="status-dot"></div>
+                        <span id="statusText">Ready</span>
+                    </div>
+                </div>
+                <button class="leave-btn" onclick="leaveMeeting()">Leave</button>
+            </div>
+            <div class="video-section">
+                <div class="video-grid participants-1" id="videoGrid">
+                    <!-- Video containers will be dynamically added here -->
+                </div>
+            </div>
+            <div class="control-panel">
+                <button class="control-btn" id="micBtn" title="Microphone">🎤</button>
+                <button class="control-btn" id="cameraBtn" title="Camera">📹</button>
+            </div>
+        </div>
+    </div>
+    <script>
+        const API_URL = 'http://localhost:8000';
+        const userData = JSON.parse(sessionStorage.getItem('user') || '{}');
+        const meetingId = sessionStorage.getItem('meeting_id');
+        const isHost = sessionStorage.getItem('is_host') === 'true';
+        if (!userData.user_id || !meetingId) {
+            alert('Session expired');
+            window.location.href = 'index.html';
+        }
+        document.getElementById('userName').textContent = userData.name;
+        document.getElementById('meetingIdDisplay').textContent = meetingId;
+        
+        let isRecording = false, isCameraOn = false;
+        let transcribeWs = null, audioContext = null, audioProcessor = null, audioSource = null;
+        let localStream = null, localVideoStream = null, voiceDetectionTimer = null;
+        
+        // WebRTC for video
+        let signalingWs = null;
+        let peerConnections = {}; // Map of user_id -> RTCPeerConnection
+        let remoteStreams = {}; // Map of user_id -> MediaStream
+        
+        const micBtn = document.getElementById('micBtn');
+        const cameraBtn = document.getElementById('cameraBtn');
+        const statusText = document.getElementById('statusText');
+        const transcriptView = document.getElementById('transcriptView');
+        const interimTextDiv = document.getElementById('interimText');
+        const videoGrid = document.getElementById('videoGrid');
+        
+        // Tabs
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const tabName = btn.dataset.tab;
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+                document.getElementById(tabName + 'Panel').classList.add('active');
+                if (tabName === 'evidence') loadEvidenceList();
+            });
+        });
+        
+        // Camera & Video Grid Management
+        async function initCamera() {
+            try {
+                // Get both video AND audio for WebRTC streaming
+                localVideoStream = await navigator.mediaDevices.getUserMedia({ 
+                    video: true, 
+                    audio: true 
+                });
+                isCameraOn = true;
+                cameraBtn.classList.add('active');
+                cameraBtn.classList.remove('off');
+                updateLocalVideo();
+                console.log('📹 Camera initialized with audio');
+            } catch (error) {
+                console.error('Camera error:', error);
+                isCameraOn = false;
+            }
+        }
+        
+        function updateLocalVideo() {
+            const myVideoContainer = document.getElementById(`video-${userData.user_id}`);
+            if (myVideoContainer) {
+                const video = myVideoContainer.querySelector('video');
+                if (localVideoStream && isCameraOn) {
+                    video.srcObject = localVideoStream;
+                    myVideoContainer.classList.remove('off');
+                } else {
+                    myVideoContainer.classList.add('off');
+                }
+            }
+        }
+        
+        function createVideoElement(userId, userName, isLocal = false) {
+            const container = document.createElement('div');
+            container.className = 'video-container';
+            container.id = `video-${userId}`;
+            if (!isLocal) container.classList.add('off');
+            
+            container.innerHTML = `
+                <video autoplay ${isLocal ? 'muted' : ''} playsinline></video>
+                <div class="video-placeholder">📷</div>
+                <div class="video-label">${userName}${isLocal ? ' (You)' : ''}</div>
+                <div class="video-status">
+                    <span class="video-status-icon camera-status">📹</span>
+                </div>
+            `;
+            
+            return container;
+        }
+        
+        function updateVideoGrid() {
+            const allParticipants = [userData.user_id, ...Object.keys(peerConnections)];
+            const participantCount = allParticipants.length;
+            
+            console.log(`📊 Grid updated: ${participantCount} participant(s)`);
+        }
+        
+        function addVideoToGrid(userId, userName, isLocal = false) {
+            // Check if already exists
+            if (document.getElementById(`video-${userId}`)) return;
+            
+            const videoElement = createVideoElement(userId, userName, isLocal);
+            
+            if (isLocal) {
+                // Add local video first
+                videoGrid.insertBefore(videoElement, videoGrid.firstChild);
+                updateLocalVideo();
+            } else {
+                videoGrid.appendChild(videoElement);
+            }
+            
+            updateVideoGrid();
+        }
+        
+        function removeVideoFromGrid(userId) {
+            const container = document.getElementById(`video-${userId}`);
+            if (container) {
+                container.remove();
+                updateVideoGrid();
+            }
+        }
+        
+        cameraBtn.addEventListener('click', () => {
+            if (!localVideoStream) { 
+                initCamera(); 
+                return; 
+            }
+            const track = localVideoStream.getVideoTracks()[0];
+            if (track) {
+                isCameraOn = !isCameraOn;
+                track.enabled = isCameraOn;
+                updateLocalVideo();
+                
+                if (isCameraOn) {
+                    cameraBtn.classList.add('active');
+                    cameraBtn.classList.remove('off');
+                } else {
+                    cameraBtn.classList.remove('active');
+                    cameraBtn.classList.add('off');
+                }
+                
+                // Update camera status for all peers
+                for (let userId in peerConnections) {
+                    const pc = peerConnections[userId];
+                    if (pc && localVideoStream) {
+                        const senders = pc.getSenders();
+                        const videoSender = senders.find(s => s.track && s.track.kind === 'video');
+                        if (videoSender) {
+                            videoSender.replaceTrack(track);
+                        }
+                    }
+                }
+            }
+        });
+        
+        // Microphone
+        micBtn.addEventListener('click', () => {
+            isRecording ? stopRecording() : startRecording();
+        });
+        
+        async function startRecording() {
+            try {
+                localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                transcribeWs = new WebSocket(`ws://localhost:8000/ws/transcribe/${meetingId}/${userData.user_id}`);
+                
+                transcribeWs.onopen = () => {
+                    console.log('✅ Connected');
+                    statusText.textContent = 'Recording...';
+                    statusText.style.color = '#4a90e2';
+                    micBtn.classList.add('active');
+                    isRecording = true;
+                    voiceDetectionTimer = setTimeout(() => {
+                        if (isRecording && transcriptView.querySelectorAll('.transcript-item').length === 0) {
+                            statusText.textContent = '⚠️ No voice';
+                            statusText.style.color = '#e74c3c';
+                        }
+                    }, 10000);
+                };
+                
+                transcribeWs.onmessage = (event) => {
+                    const data = JSON.parse(event.data);
+                    if (data.type === 'transcript') {
+                        addTranscript(data.data);
+                        interimTextDiv.style.display = 'none';
+                        if (voiceDetectionTimer) { clearTimeout(voiceDetectionTimer); voiceDetectionTimer = null; }
+                        statusText.textContent = 'Recording...';
+                        statusText.style.color = '#4a90e2';
+                    } else if (data.type === 'interim') {
+                        if (data.data && data.data.text) {
+                            interimTextDiv.textContent = data.data.text;
+                            interimTextDiv.style.display = 'block';
+                        }
+                    }
+                };
+                
+                transcribeWs.onerror = (error) => {
+                    console.error('❌ Error:', error);
+                    statusText.textContent = 'Error';
+                    statusText.style.color = '#e74c3c';
+                };
+                
+                transcribeWs.onclose = () => {
+                    console.log('🔌 Closed');
+                    if (isRecording) { statusText.textContent = 'Closed'; stopRecording(); }
+                };
+                
+                audioContext = new AudioContext({ sampleRate: 16000 });
+                audioSource = audioContext.createMediaStreamSource(localStream);
+                audioProcessor = audioContext.createScriptProcessor(2048, 1, 1);
+                audioSource.connect(audioProcessor);
+                audioProcessor.connect(audioContext.destination);
+                
+                audioProcessor.onaudioprocess = (e) => {
+                    if (transcribeWs && transcribeWs.readyState === WebSocket.OPEN) {
+                        const input = e.inputBuffer.getChannelData(0);
+                        const pcm = convertFloat32ToInt16(input);
+                        transcribeWs.send(pcm);
+                    }
+                };
+            } catch (error) {
+                console.error('❌ Mic error:', error);
+                alert('Microphone access denied');
+            }
+        }
+        
+        function stopRecording() {
+            console.log('🛑 Stop');
+            if (transcribeWs) { transcribeWs.close(); transcribeWs = null; }
+            if (audioProcessor) { audioProcessor.disconnect(); audioProcessor = null; }
+            if (audioSource) { audioSource.disconnect(); audioSource = null; }
+            if (audioContext) { audioContext.close(); audioContext = null; }
+            if (localStream) { localStream.getTracks().forEach(t => t.stop()); localStream = null; }
+            isRecording = false;
+            micBtn.classList.remove('active');
+            statusText.textContent = 'Ready';
+            statusText.style.color = '';
+            if (voiceDetectionTimer) { clearTimeout(voiceDetectionTimer); voiceDetectionTimer = null; }
+        }
+        
+        function convertFloat32ToInt16(buffer) {
+            const l = buffer.length, buf = new Int16Array(l);
+            for (let i = 0; i < l; i++) buf[i] = Math.min(1, buffer[i]) * 0x7FFF;
+            return buf.buffer;
+        }
+        
+        function addTranscript(data) {
+            const item = document.createElement('div');
+            item.className = 'transcript-item';
+            const time = new Date(data.timestamp).toLocaleTimeString();
+            const speakerName = data.speaker || 'Unknown';
+            const text = data.text || data.transcript || '';
+            if (!text.trim()) return;
+            item.innerHTML = `<div class="transcript-time">${time}</div><div class="transcript-speaker">${speakerName}</div><div class="transcript-text">${text}</div>`;
+            transcriptView.appendChild(item);
+            transcriptView.scrollTop = transcriptView.scrollHeight;
+            console.log('📝', text);
+        }
+        
+        // WebRTC Signaling
+        function initSignaling() {
+            signalingWs = new WebSocket(`ws://localhost:8000/ws/signaling/${meetingId}/${userData.user_id}`);
+            
+            signalingWs.onopen = () => {
+                console.log('📡 Signaling connected');
+            };
+            
+            signalingWs.onmessage = async (event) => {
+                const message = JSON.parse(event.data);
+                console.log('📨 Signaling message:', message.type);
+                
+                switch (message.type) {
+                    case 'existing_participants':
+                        // Create peer connections for all existing users
+                        console.log(`🔗 Found ${message.user_ids.length} existing participant(s)`);
+                        for (const userId of message.user_ids) {
+                            console.log(`📞 Initiating call to ${userId}`);
+                            await createPeerConnection(userId, true);
+                        }
+                        // Refresh participant list to show everyone
+                        await loadParticipants();
+                        break;
+                    
+                    case 'new_participant':
+                        // New user joined - they will send us an offer
+                        console.log(`👋 New participant joined: ${message.user_id}`);
+                        // Refresh participant list to show the new person
+                        await loadParticipants();
+                        break;
+                    
+                    case 'offer':
+                        await handleOffer(message.from_user_id, message.data);
+                        break;
+                    
+                    case 'answer':
+                        await handleAnswer(message.from_user_id, message.data);
+                        break;
+                    
+                    case 'ice-candidate':
+                        await handleIceCandidate(message.from_user_id, message.data);
+                        break;
+                    
+                    case 'participant_left':
+                        handleParticipantLeft(message.user_id);
+                        break;
+                    
+                    case 'transcript':
+                        // Receive transcript from any participant
+                        addTranscript(message.data);
+                        break;
+                }
+            };
+            
+            signalingWs.onerror = (error) => {
+                console.error('❌ Signaling error:', error);
+            };
+            
+            signalingWs.onclose = () => {
+                console.log('🔌 Signaling closed');
+            };
+        }
+        
+        async function createPeerConnection(userId, initiator = false) {
+            if (peerConnections[userId]) return peerConnections[userId];
+            
+            console.log(`🔗 Creating peer connection with ${userId} (initiator: ${initiator})`);
+            
+            const pc = new RTCPeerConnection({
+                iceServers: [
+                    { urls: 'stun:stun.l.google.com:19302' },
+                    { urls: 'stun:stun1.l.google.com:19302' }
+                ]
+            });
+            
+            peerConnections[userId] = pc;
+            
+            // Add local video and audio streams
+            if (localVideoStream) {
+                console.log(`📤 Adding ${localVideoStream.getTracks().length} tracks to peer ${userId}`);
+                localVideoStream.getTracks().forEach(track => {
+                    console.log(`  - ${track.kind} track: ${track.enabled}`);
+                    pc.addTrack(track, localVideoStream);
+                });
+            } else {
+                console.warn('⚠️ No local stream available when creating peer connection');
+            }
+            
+            // Handle incoming tracks
+            pc.ontrack = (event) => {
+                console.log(`📹 Received ${event.track.kind} track from ${userId}`);
+                if (!remoteStreams[userId]) {
+                    remoteStreams[userId] = new MediaStream();
+                }
+                remoteStreams[userId].addTrack(event.track);
+                
+                // Update video element
+                const videoContainer = document.getElementById(`video-${userId}`);
+                if (videoContainer) {
+                    const video = videoContainer.querySelector('video');
+                    video.srcObject = remoteStreams[userId];
+                    videoContainer.classList.remove('off');
+                    console.log(`✅ Attached ${event.track.kind} stream to video element for ${userId}`);
+                } else {
+                    // Add new video to grid (fetch user name from participants)
+                    console.log(`⚠️ Video container not found for ${userId}, will add after loading participants`);
+                    loadParticipants().then(() => {
+                        const container = document.getElementById(`video-${userId}`);
+                        if (container) {
+                            const video = container.querySelector('video');
+                            if (video) {
+                                video.srcObject = remoteStreams[userId];
+                                container.classList.remove('off');
+                            }
+                        }
+                    });
+                }
+            };
+            
+            // Handle ICE candidates
+            pc.onicecandidate = (event) => {
+                if (event.candidate && signalingWs && signalingWs.readyState === WebSocket.OPEN) {
+                    signalingWs.send(JSON.stringify({
+                        type: 'ice-candidate',
+                        target_user_id: userId,
+                        data: event.candidate
+                    }));
+                }
+            };
+            
+            pc.onconnectionstatechange = () => {
+                console.log(`🔗 Connection state with ${userId}: ${pc.connectionState}`);
+                if (pc.connectionState === 'failed' || pc.connectionState === 'disconnected') {
+                    handleParticipantLeft(userId);
+                }
+            };
+            
+            // If initiator, create and send offer
+            if (initiator) {
+                try {
+                    const offer = await pc.createOffer();
+                    await pc.setLocalDescription(offer);
+                    
+                    if (signalingWs && signalingWs.readyState === WebSocket.OPEN) {
+                        signalingWs.send(JSON.stringify({
+                            type: 'offer',
+                            target_user_id: userId,
+                            data: offer
+                        }));
+                    }
+                } catch (error) {
+                    console.error('Error creating offer:', error);
+                }
+            }
+            
+            return pc;
+        }
+        
+        async function handleOffer(userId, offer) {
+            console.log(`📥 Received offer from ${userId}`);
+            const pc = await createPeerConnection(userId, false);
+            
+            try {
+                await pc.setRemoteDescription(new RTCSessionDescription(offer));
+                const answer = await pc.createAnswer();
+                await pc.setLocalDescription(answer);
+                
+                if (signalingWs && signalingWs.readyState === WebSocket.OPEN) {
+                    signalingWs.send(JSON.stringify({
+                        type: 'answer',
+                        target_user_id: userId,
+                        data: answer
+                    }));
+                }
+            } catch (error) {
+                console.error('Error handling offer:', error);
+            }
+        }
+        
+        async function handleAnswer(userId, answer) {
+            console.log(`📥 Received answer from ${userId}`);
+            const pc = peerConnections[userId];
+            if (pc) {
+                try {
+                    await pc.setRemoteDescription(new RTCSessionDescription(answer));
+                } catch (error) {
+                    console.error('Error handling answer:', error);
+                }
+            }
+        }
+        
+        async function handleIceCandidate(userId, candidate) {
+            const pc = peerConnections[userId];
+            if (pc) {
+                try {
+                    await pc.addIceCandidate(new RTCIceCandidate(candidate));
+                } catch (error) {
+                    console.error('Error adding ICE candidate:', error);
+                }
+            }
+        }
+        
+        function handleParticipantLeft(userId) {
+            console.log(`👋 Participant left: ${userId}`);
+            
+            // Close peer connection
+            if (peerConnections[userId]) {
+                peerConnections[userId].close();
+                delete peerConnections[userId];
+            }
+            
+            // Remove remote stream and stop all tracks
+            if (remoteStreams[userId]) {
+                remoteStreams[userId].getTracks().forEach(track => track.stop());
+                delete remoteStreams[userId];
+            }
+            
+            // Remove video from grid
+            removeVideoFromGrid(userId);
+            
+            // Force reload participants to update list
+            loadParticipants();
+        }
+        
+        // Participants
+        async function loadParticipants() {
+            try {
+                const res = await fetch(`${API_URL}/meeting/${meetingId}/participants`);
+                const data = await res.json();
+                const currentParticipantIds = data.participants.map(p => p.user_id);
+                
+                document.getElementById('participantCount').textContent = data.participants.length;
+                document.getElementById('participantsList').innerHTML = data.participants.map(p => `
+                    <div class="participant-item">
+                        <div class="participant-avatar">${p.name.charAt(0).toUpperCase()}</div>
+                        <div style="flex: 1;">${p.name}${p.user_id === userData.user_id ? ' (You)' : ''}${isHost && p.user_id === userData.user_id ? '<span class="host-badge">HOST</span>' : ''}</div>
+                    </div>
+                `).join('');
+                
+                // Remove participants who left (no longer in the list)
+                const currentVideoIds = Array.from(document.querySelectorAll('.video-container')).map(
+                    el => el.id.replace('video-', '')
+                );
+                
+                for (const videoUserId of currentVideoIds) {
+                    if (!currentParticipantIds.includes(videoUserId)) {
+                        console.log(`🚫 Removing left participant: ${videoUserId}`);
+                        handleParticipantLeft(videoUserId);
+                    }
+                }
+                
+                // Add new participants to video grid
+                for (const participant of data.participants) {
+                    if (participant.user_id === userData.user_id) {
+                        // Local user
+                        if (!document.getElementById(`video-${userData.user_id}`)) {
+                            addVideoToGrid(userData.user_id, userData.name, true);
+                        }
+                    } else {
+                        // Remote user
+                        if (!document.getElementById(`video-${participant.user_id}`)) {
+                            console.log(`➕ Adding new participant to grid: ${participant.name}`);
+                            addVideoToGrid(participant.user_id, participant.name, false);
+                            
+                            // If we have a stream for this user, attach it
+                            if (remoteStreams[participant.user_id]) {
+                                const container = document.getElementById(`video-${participant.user_id}`);
+                                if (container) {
+                                    const video = container.querySelector('video');
+                                    video.srcObject = remoteStreams[participant.user_id];
+                                    container.classList.remove('off');
+                                }
+                            }
+                        }
+                    }
+                }
+            } catch (error) { console.error('Participants error:', error); }
+        }
+        
+        // Evidence
+        document.getElementById('uploadBtn').addEventListener('click', async () => {
+            const files = document.getElementById('evidenceFiles').files;
+            const status = document.getElementById('uploadStatus');
+            const btn = document.getElementById('uploadBtn');
+            if (files.length === 0) { status.innerHTML = '<span style="color: #e74c3c;">Select files</span>'; return; }
+            const form = new FormData();
+            for (let f of files) form.append('files', f);
+            try {
+                btn.disabled = true;
+                status.innerHTML = '<span style="color: #4a90e2;">Uploading...</span>';
+                const res = await fetch(`${API_URL}/evidence/upload`, { method: 'POST', body: form });
+                const result = await res.json();
+                if (res.ok) {
+                    status.innerHTML = `<span style="color: #27ae60;">✓ ${result.files.length} uploaded</span>`;
+                    document.getElementById('evidenceFiles').value = '';
+                    setTimeout(() => { loadEvidenceList(); status.innerHTML = ''; }, 2000);
+                } else {
+                    status.innerHTML = `<span style="color: #e74c3c;">Error: ${result.error || result.detail}</span>`;
+                }
+            } catch (error) {
+                status.innerHTML = '<span style="color: #e74c3c;">Failed</span>';
+            } finally { btn.disabled = false; }
+        });
+        
+        async function loadEvidenceList() {
+            try {
+                const res = await fetch(`${API_URL}/evidence`);
+                const data = await res.json();
+                const list = document.getElementById('evidenceList');
+                if (data.files && data.files.length > 0) {
+                    list.innerHTML = data.files.map(f => {
+                        const name = typeof f === 'string' ? f : f.filename;
+                        let icon = '📄';
+                        if (name.endsWith('.mp3') || name.endsWith('.wav') || name.endsWith('.m4a')) icon = '🎵';
+                        else if (name.endsWith('.jpg') || name.endsWith('.png') || name.endsWith('.jpeg')) icon = '🖼️';
+                        return `
+                            <div class="evidence-item">
+                                <span style="font-size: 14px;">${icon}</span>
+                                <span style="flex: 1;">${name}</span>
+                                <button onclick="downloadEvidence('${name}')" 
+                                        style="background: transparent; border: none; cursor: pointer; font-size: 16px; padding: 4px 8px; color: #4a90e2;" 
+                                        title="Download">
+                                    ⬇️
+                                </button>
+                            </div>`;
+                    }).join('');
+                } else {
+                    list.innerHTML = '<p style="color: #888; text-align: center; font-size: 10px;">No files</p>';
+                }
+            } catch (error) { console.error('Evidence error:', error); }
+        }
+        
+        function downloadEvidence(filename) {
+            // Create a temporary link and trigger download
+            const downloadUrl = `${API_URL}/evidence/download/${encodeURIComponent(filename)}`;
+            const a = document.createElement('a');
+            a.href = downloadUrl;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            console.log(`📥 Downloading: ${filename}`);
+        }
+        
+        // Chat
+        document.getElementById('sendBtn').addEventListener('click', sendMessage);
+        document.getElementById('chatInput').addEventListener('keypress', (e) => { if (e.key === 'Enter') sendMessage(); });
+        
+        async function sendMessage() {
+            const msg = document.getElementById('chatInput').value.trim();
+            if (!msg) return;
+            const messages = document.getElementById('chatMessages');
+            const userMsg = document.createElement('div');
+            userMsg.className = 'chat-message user';
+            userMsg.innerHTML = `<div class="chat-bubble">${msg}</div>`;
+            messages.appendChild(userMsg);
+            messages.scrollTop = messages.scrollHeight;
+            document.getElementById('chatInput').value = '';
+            document.getElementById('sendBtn').disabled = true;
+            try {
+                const res = await fetch(`${API_URL}/chat`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: msg })
+                });
+                const data = await res.json();
+                const assistantMsg = document.createElement('div');
+                assistantMsg.className = 'chat-message assistant';
+                assistantMsg.innerHTML = `<div class="chat-bubble">${data.response}</div>`;
+                messages.appendChild(assistantMsg);
+                messages.scrollTop = messages.scrollHeight;
+            } catch (error) {
+                console.error('Chat error:', error);
+                const errorMsg = document.createElement('div');
+                errorMsg.className = 'chat-message assistant';
+                errorMsg.innerHTML = '<div class="chat-bubble" style="color: #e74c3c;">Error</div>';
+                messages.appendChild(errorMsg);
+            } finally { document.getElementById('sendBtn').disabled = false; }
+        }
+        
+        // Leave
+        async function leaveMeeting() {
+            if (confirm('Leave meeting?')) {
+                // Notify server that user is leaving
+                try {
+                    await fetch(`${API_URL}/meeting/${meetingId}/leave`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ user_id: userData.user_id })
+                    });
+                } catch (error) {
+                    console.error('Error leaving meeting:', error);
+                }
+                
+                cleanup();
+                sessionStorage.clear();
+                window.location.href = 'index.html';
+            }
+        }
+        
+        function cleanup() {
+            if (isRecording) stopRecording();
+            if (localVideoStream) localVideoStream.getTracks().forEach(t => t.stop());
+            if (signalingWs) signalingWs.close();
+            
+            // Close all peer connections
+            for (let userId in peerConnections) {
+                peerConnections[userId].close();
+            }
+            peerConnections = {};
+            remoteStreams = {};
+        }
+        
+        window.addEventListener('beforeunload', () => {
+            // Notify server that user is leaving
+            navigator.sendBeacon(
+                `${API_URL}/meeting/${meetingId}/leave`,
+                JSON.stringify({ user_id: userData.user_id })
+            );
+            cleanup();
+        });
+        
+        // Init
+        console.log('🚀 Init meeting');
+        console.log('👤', userData.name);
+        console.log('🎯', meetingId);
+        
+        // Load participants first to see everyone in the meeting
+        loadParticipants();
+        
+        // Initialize camera and signaling
+        initCamera().then(() => {
+            console.log('📹 Camera ready, starting signaling...');
+            // Start WebRTC signaling after camera is ready
+            initSignaling();
+        });
+        
+        // Refresh participants list periodically
+        setInterval(loadParticipants, 3000);
+        
+        console.log('✅ Ready');
+    </script>
+</body>
+</html>
