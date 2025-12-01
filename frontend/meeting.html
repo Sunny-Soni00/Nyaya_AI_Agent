@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nyaya-Sahayak | Meeting Room</title>
+    <script src="config.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -389,7 +390,7 @@
         </div>
     </div>
     <script>
-        const API_URL = 'http://localhost:8000';
+        const API_URL = CONFIG.API_URL;
         const userData = JSON.parse(sessionStorage.getItem('user') || '{}');
         const meetingId = sessionStorage.getItem('meeting_id');
         const isHost = sessionStorage.getItem('is_host') === 'true';
