@@ -5,9 +5,10 @@ from datetime import datetime
 from typing import Dict, List, Optional
 
 class User:
-    def __init__(self, user_id: str, name: str, meeting_id: str = None):
+    def __init__(self, user_id: str, name: str, role: str = "Observer", meeting_id: str = None):
         self.user_id = user_id
         self.name = name
+        self.role = role
         self.meeting_id = meeting_id
         self.joined_at = datetime.now()
         self.is_speaking = False
@@ -16,6 +17,7 @@ class User:
         return {
             "user_id": self.user_id,
             "name": self.name,
+            "role": self.role,
             "meeting_id": self.meeting_id,
             "joined_at": self.joined_at.isoformat(),
             "is_speaking": self.is_speaking
@@ -74,12 +76,12 @@ class MeetingManager:
             if meeting_id not in self.meetings:
                 return meeting_id
                 
-    def create_user(self, name: str) -> User:
+    def create_user(self, name: str, role: str = "Observer") -> User:
         """Create a new user"""
         user_id = str(uuid.uuid4())
-        user = User(user_id, name)
+        user = User(user_id, name, role)
         self.users[user_id] = user
-        print(f"✅ User created: {name} ({user_id})")
+        print(f"✅ User created: {name} ({role}) ({user_id})")
         return user
         
     def create_meeting(self, host_user: User) -> Meeting:

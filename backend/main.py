@@ -10,6 +10,8 @@ from deepgram_service import DeepgramTranscriber
 from llm_service import GroqLLMService
 from evidence_service import EvidenceManager
 from meeting_service import MeetingManager
+from criminal_records_service import criminal_records_manager
+from report_service import report_generator
 
 app = FastAPI()
 
@@ -48,16 +50,18 @@ async def root():
 async def login(data: dict):
     """Create a new user session"""
     name = data.get("name", "").strip()
+    role = data.get("role", "Observer").strip()
     if not name:
         return JSONResponse(
             status_code=400,
             content={"error": "Name is required"}
         )
     
-    user = meeting_manager.create_user(name)
+    user = meeting_manager.create_user(name, role)
     return {
         "user_id": user.user_id,
         "name": user.name,
+        "role": user.role,
         "message": f"Welcome, {name}!"
     }
 
@@ -663,6 +667,151 @@ async def search_evidence(query: dict):
     return {"results": results}
 
 
+# ============ CRIMINAL RECORDS ENDPOINTS ============
+
+@app.get("/criminal-records")
+async def get_criminal_records():
+    """Get all criminal records"""
+    try:
+        records = criminal_records_manager.get_all_records()
+        return {
+            "records": records,
+            "total": len(records),
+            "flagged": len(criminal_records_manager.get_flagged_records())
+        }
+    except Exception as e:
+        return JSONResponse(
+            status_code=500,
+            content={"error": str(e)}
+        )
+
+
+@app.get("/criminal-records/search/{name}")
+async def search_criminal_record(name: str):
+    """Search for a criminal record by name"""
+    try:
+        record = criminal_records_manager.search_by_name(name)
+        if record:
+            return {"found": True, "record": record}
+        else:
+            return {"found": False, "message": f"No record found for '{name}'"}
+    except Exception as e:
+        return JSONResponse(
+            status_code=500,
+            content={"error": str(e)}
+        )
+
+
+@app.get("/criminal-records/flagged")
+async def get_flagged_records():
+    """Get only flagged criminal records"""
+    try:
+        records = criminal_records_manager.get_flagged_records()
+        return {"records": records, "count": len(records)}
+    except Exception as e:
+        return JSONResponse(
+            status_code=500,
+            content={"error": str(e)}
+        )
+
+
+@app.post("/criminal-records/add")
+async def add_criminal_record(record: dict):
+    """Add a new criminal record"""
+    try:
+        success = criminal_records_manager.add_record(record)
+        if success:
+            return {"success": True, "message": "Record added successfully"}
+        else:
+            return JSONResponse(
+                status_code=400,
+                content={"success": False, "message": "Invalid record format"}
+            )
+    except Exception as e:
+        return JSONResponse(
+            status_code=500,
+            content={"error": str(e)}
+        )
+
+
+@app.post("/generate-report")
+async def generate_report(data: dict):
+    """Generate comprehensive court proceeding report"""
+    try:
+        meeting_id = data.get("meeting_id")
+        judge_statement = data.get("judge_statement", "")
+        
+        if not meeting_id:
+            return JSONResponse(
+                status_code=400,
+                content={"error": "Meeting ID required"}
+            )
+        
+        # Get meeting from meeting manager
+        meeting = meeting_manager.get_meeting(meeting_id.upper())
+        if not meeting:
+            return JSONResponse(
+                status_code=404,
+                content={"error": "Meeting not found"}
+            )
+        
+        # Prepare meeting data for report
+        meeting_data = {
+            "meeting_id": meeting_id,
+            "transcript": meeting.transcript,
+            "evidence": evidence_manager.get_evidence_list(),
+            "criminal_records": data.get("criminal_records_checked", []),
+            "chat_history": data.get("chat_history", []),
+            "judge_statement": judge_statement,
+            "participants": meeting.get_participant_list(),
+            "start_time": meeting.created_at.isoformat(),
+            "duration": data.get("duration", "N/A")
+        }
+        
+        # Generate report
+        report = report_generator.generate_report_content(meeting_data)
+        
+        if not report:
+            return JSONResponse(
+                status_code=500,
+                content={"error": "Failed to generate report"}
+            )
+        
+        # Combine all sections into full report text
+        full_report = (
+            report['header'] +
+            report['participants'] +
+            report['criminal_records'] +
+            "\n═══════════════════════════════════════════════════════════════\n" +
+            "                     EXECUTIVE SUMMARY\n" +
+            "              (AI-Generated Analysis & Overview)\n" +
+            "═══════════════════════════════════════════════════════════════\n\n" +
+            report['ai_analysis'] + "\n" +
+            report['transcript'] +
+            report['evidence'] +
+            "\n═══════════════════════════════════════════════════════════════\n" +
+            "                  JUDGE'S FINAL STATEMENT\n" +
+            "═══════════════════════════════════════════════════════════════\n\n" +
+            (judge_statement if judge_statement else "No final statement has been provided by the presiding judge at this time.\n") + "\n" +
+            report['footer']
+        )
+        
+        return {
+            "success": True,
+            "report": full_report,
+            "sections": report
+        }
+        
+    except Exception as e:
+        print(f"Error generating report: {e}")
+        import traceback
+        traceback.print_exc()
+        return JSONResponse(
+            status_code=500,
+            content={"error": str(e)}
+        )
+
+
 @app.post("/chat")
 async def chat(data: dict):
     """Chat with AI assistant using Groq LLM"""
@@ -690,8 +839,15 @@ async def chat(data: dict):
                 for i, result in enumerate(evidence_results, 1):
                     evidence_context += f"\n[Evidence {i} from {result['filename']}]:\n{result['content']}\n"
         
+        # Get criminal records context
+        criminal_records_context = ""
+        # Check if question mentions criminal records, names, or record-related keywords
+        record_keywords = ['criminal', 'record', 'crime', 'flagged', 'history', 'conviction', 'assault', 'theft', 'fraud']
+        if any(keyword in message.lower() for keyword in record_keywords):
+            criminal_records_context = "\n\n" + criminal_records_manager.get_all_records_text()
+        
         # Combine context
-        full_context = transcript_context + evidence_context
+        full_context = transcript_context + evidence_context + criminal_records_context
         
         # Get response from Groq LLM
         response = await llm_service.ask_question(message, full_context)

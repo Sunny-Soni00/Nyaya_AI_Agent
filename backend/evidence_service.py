@@ -142,6 +142,28 @@ class EvidenceManager:
         """Get all evidence as combined text"""
         return "\n\n".join([f"[{doc['filename']}]\n{doc['content']}" for doc in self.documents])
     
+    def get_evidence_list(self):
+        """Get list of all evidence documents with metadata for report"""
+        evidence_list = []
+        
+        # Add document evidence
+        for doc in self.documents:
+            evidence_list.append({
+                "name": doc.get('filename', 'Unknown'),
+                "type": doc.get('type', 'document'),
+                "analysis": doc.get('content', '')[:500] + "..." if len(doc.get('content', '')) > 500 else doc.get('content', '')
+            })
+        
+        # Add audio transcripts
+        for filename, transcript_data in self.audio_transcripts.items():
+            evidence_list.append({
+                "name": filename,
+                "type": "audio",
+                "analysis": transcript_data.get('transcript', '')[:500] + "..." if len(transcript_data.get('transcript', '')) > 500 else transcript_data.get('transcript', '')
+            })
+        
+        return evidence_list
+    
     def clear_evidence(self):
         """Clear all evidence"""
         self.documents = []

@@ -211,6 +211,18 @@
                 <input type="text" id="userName" placeholder="Enter your full name" required>
             </div>
 
+            <div class="form-group">
+                <label for="userRole">Your Role</label>
+                <select id="userRole" style="width: 100%; padding: 15px; border: 2px solid #e0e0e0; border-radius: 10px; font-size: 16px; background: white; cursor: pointer;">
+                    <option value="Judge">⚖️ Judge</option>
+                    <option value="Lawyer">👔 Lawyer</option>
+                    <option value="Witness">🗣️ Witness</option>
+                    <option value="Defendant">👤 Defendant</option>
+                    <option value="Prosecutor">⚔️ Prosecutor</option>
+                    <option value="Observer">👁️ Observer</option>
+                </select>
+            </div>
+
             <button class="btn btn-primary" onclick="createMeeting()">
                 🎯 Create New Meeting
             </button>
@@ -233,6 +245,18 @@
             <div class="form-group">
                 <label for="joinName">Your Name</label>
                 <input type="text" id="joinName" placeholder="Enter your full name" required>
+            </div>
+
+            <div class="form-group">
+                <label for="joinRole">Your Role</label>
+                <select id="joinRole" style="width: 100%; padding: 15px; border: 2px solid #e0e0e0; border-radius: 10px; font-size: 16px; background: white; cursor: pointer;">
+                    <option value="Judge">⚖️ Judge</option>
+                    <option value="Lawyer">👔 Lawyer</option>
+                    <option value="Witness">🗣️ Witness</option>
+                    <option value="Defendant">👤 Defendant</option>
+                    <option value="Prosecutor">⚔️ Prosecutor</option>
+                    <option value="Observer">👁️ Observer</option>
+                </select>
             </div>
 
             <div class="form-group">
@@ -278,6 +302,7 @@
 
         async function createMeeting() {
             const name = document.getElementById('userName').value.trim();
+            const role = document.getElementById('userRole').value;
             
             if (!name) {
                 showMessage('Please enter your name', 'error');
@@ -289,7 +314,7 @@
                 const loginResponse = await fetch(`${API_URL}/auth/login`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ name })
+                    body: JSON.stringify({ name, role })
                 });
 
                 if (!loginResponse.ok) {
@@ -315,6 +340,7 @@
                 sessionStorage.setItem('user', JSON.stringify(userData));
                 sessionStorage.setItem('meeting_id', meetingData.meeting_id);
                 sessionStorage.setItem('is_host', 'true');
+                sessionStorage.setItem('user_role', role);
 
                 showMessage('Meeting created successfully! Redirecting...', 'success');
                 
@@ -330,6 +356,7 @@
 
         async function joinMeeting() {
             const name = document.getElementById('joinName').value.trim();
+            const role = document.getElementById('joinRole').value;
             const meetingId = document.getElementById('meetingId').value.trim().toUpperCase();
             
             if (!name) {
@@ -347,7 +374,7 @@
                 const loginResponse = await fetch(`${API_URL}/auth/login`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ name })
+                    body: JSON.stringify({ name, role })
                 });
 
                 if (!loginResponse.ok) {
@@ -377,6 +404,7 @@
                 sessionStorage.setItem('user', JSON.stringify(userData));
                 sessionStorage.setItem('meeting_id', meetingId);
                 sessionStorage.setItem('is_host', 'false');
+                sessionStorage.setItem('user_role', role);
 
                 showMessage('Joined meeting successfully! Redirecting...', 'success');
                 

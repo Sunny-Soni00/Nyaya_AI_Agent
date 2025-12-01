@@ -100,6 +100,7 @@
         .tab-content { flex: 1; overflow: hidden; }
         .tab-panel { display: none; height: 100%; overflow-y: auto; padding: 12px; }
         .tab-panel.active { display: block; }
+        #reportPanel.active { display: flex !important; }
         
         /* Transcript */
         .transcript-item { margin-bottom: 12px; animation: slideIn 0.3s ease; }
@@ -285,7 +286,9 @@
                 <div class="tab-buttons">
                     <button class="tab-btn active" data-tab="transcript">📝</button>
                     <button class="tab-btn" data-tab="evidence">📁</button>
+                    <button class="tab-btn" data-tab="records">🚨</button>
                     <button class="tab-btn" data-tab="chat">💬</button>
+                    <button class="tab-btn" data-tab="report" id="reportTabBtn" style="display: none;">📋</button>
                 </div>
                 <div class="tab-content">
                     <div class="tab-panel active" id="transcriptPanel">
@@ -307,15 +310,57 @@
                             <p style="color: #888; text-align: center; font-size: 10px;">No files</p>
                         </div>
                     </div>
+                    <div class="tab-panel" id="recordsPanel">
+                        <div style="margin-bottom: 12px;">
+                            <input type="text" id="recordSearchInput" placeholder="Search by name..." 
+                                   style="width: 100%; padding: 8px; border-radius: 5px; border: 1px solid #444; background: #2a2a2a; color: white; font-size: 11px;">
+                            <button onclick="searchCriminalRecord()" style="margin-top: 8px; width: 100%; padding: 8px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; border-radius: 5px; color: white; cursor: pointer; font-size: 11px;">
+                                🔍 Search Record
+                            </button>
+                        </div>
+                        <div id="criminalRecordsList" style="max-height: 400px; overflow-y: auto;"></div>
+                    </div>
                     <div class="tab-panel" id="chatPanel" style="display: flex; flex-direction: column; height: 100%;">
                         <div class="chat-messages" id="chatMessages">
                             <div style="text-align: center; color: #888; padding: 15px 8px; font-size: 10px;">
-                                <p>Ask about transcript and evidence</p>
+                                <p>Ask about transcript, evidence, and criminal records</p>
                             </div>
                         </div>
                         <div class="chat-input-container">
                             <input type="text" class="chat-input" id="chatInput" placeholder="Ask...">
                             <button class="send-btn" id="sendBtn">Send</button>
+                        </div>
+                    </div>
+                    <div class="tab-panel" id="reportPanel" style="flex-direction: column; padding: 12px;">
+                        <div id="judgeStatementSection" style="margin-bottom: 15px; display: none;">
+                            <label style="display: block; font-weight: 600; margin-bottom: 8px; font-size: 11px;">Judge's Final Statement:</label>
+                            <textarea id="judgeStatement" style="width: 100%; min-height: 80px; padding: 10px; border-radius: 8px; border: 1px solid #444; background: #2a2a2a; color: white; font-size: 11px; resize: vertical;" placeholder="Enter final verdict or statement..."></textarea>
+                        </div>
+                        <button id="generateReportBtn" style="width: 100%; padding: 12px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; border-radius: 8px; color: white; font-weight: 600; cursor: pointer; margin-bottom: 15px; font-size: 12px;">
+                            📋 Generate Report
+                        </button>
+                        <div id="reportPreview" style="flex: 1; background: #1a1a1a; border-radius: 8px; padding: 12px; overflow-y: auto; font-family: 'Courier New', monospace; font-size: 10px; line-height: 1.6; white-space: pre-wrap; display: none;">
+                            <div id="reportContent"></div>
+                        </div>
+                        <div id="reportActions" style="display: none; margin-top: 12px; gap: 8px; display: none;">
+                            <button id="editReportBtn" style="flex: 1; padding: 10px; background: #444; border: none; border-radius: 8px; color: white; cursor: pointer; font-size: 11px;">
+                                ✏️ Edit
+                            </button>
+                            <button id="downloadReportBtn" style="flex: 1; padding: 10px; background: #10b981; border: none; border-radius: 8px; color: white; cursor: pointer; font-size: 11px;">
+                                ⬇️ Download
+                            </button>
+                        </div>
+                        <div id="reportPlaceholder" style="text-align: center; color: #888; padding: 30px; font-size: 11px;">
+                            <p style="font-size: 14px; margin-bottom: 15px;">📋 <strong>Court Report Generator</strong></p>
+                            <p style="margin-bottom: 10px;">Generate a comprehensive professional report of this court proceeding</p>
+                            <p style="font-size: 10px; color: #666;">Report includes:</p>
+                            <ul style="list-style: none; padding: 0; margin-top: 8px; font-size: 10px; color: #888;">
+                                <li>✓ Session transcript with timestamps</li>
+                                <li>✓ Evidence documents analysis</li>
+                                <li>✓ Criminal records checked</li>
+                                <li>✓ AI-powered case summary</li>
+                                <li>✓ Judge's final statement</li>
+                            </ul>
                         </div>
                     </div>
                 </div>
@@ -380,6 +425,15 @@
                 document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
                 document.getElementById(tabName + 'Panel').classList.add('active');
                 if (tabName === 'evidence') loadEvidenceList();
+                if (tabName === 'records') loadCriminalRecords();
+                if (tabName === 'report') {
+                    // Show placeholder if no report generated yet
+                    if (!currentReportText) {
+                        document.getElementById('reportPlaceholder').style.display = 'block';
+                        document.getElementById('reportPreview').style.display = 'none';
+                        document.getElementById('reportActions').style.display = 'none';
+                    }
+                }
             });
         });
         
@@ -836,7 +890,10 @@
                 document.getElementById('participantsList').innerHTML = data.participants.map(p => `
                     <div class="participant-item">
                         <div class="participant-avatar">${p.name.charAt(0).toUpperCase()}</div>
-                        <div style="flex: 1;">${p.name}${p.user_id === userData.user_id ? ' (You)' : ''}${isHost && p.user_id === userData.user_id ? '<span class="host-badge">HOST</span>' : ''}</div>
+                        <div style="flex: 1;">
+                            <div>${p.name}${p.user_id === userData.user_id ? ' (You)' : ''}${isHost && p.user_id === userData.user_id ? '<span class="host-badge">HOST</span>' : ''}</div>
+                            <div style="font-size: 9px; color: #888; margin-top: 2px;">${p.role || 'Observer'}</div>
+                        </div>
                     </div>
                 `).join('');
                 
@@ -945,6 +1002,119 @@
             console.log(`📥 Downloading: ${filename}`);
         }
         
+        // Criminal Records
+        async function loadCriminalRecords() {
+            try {
+                const response = await fetch(`${API_URL}/criminal-records`);
+                const data = await response.json();
+                
+                const listDiv = document.getElementById('criminalRecordsList');
+                listDiv.innerHTML = '';
+                
+                if (data.records && data.records.length > 0) {
+                    listDiv.innerHTML = `
+                        <div style="margin-bottom: 10px; padding: 8px; background: #2a2a2a; border-radius: 5px; font-size: 11px;">
+                            <strong>Total Records:</strong> ${data.total} | 
+                            <strong style="color: #ef4444;">Flagged:</strong> ${data.flagged}
+                        </div>
+                    `;
+                    
+                    data.records.forEach(record => {
+                        const statusColor = record.status === 'Flagged' ? '#ef4444' : '#10b981';
+                        const recordDiv = document.createElement('div');
+                        recordDiv.style.cssText = `
+                            padding: 10px;
+                            margin: 8px 0;
+                            background: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%);
+                            border-left: 3px solid ${statusColor};
+                            border-radius: 5px;
+                            font-size: 11px;
+                        `;
+                        recordDiv.innerHTML = `
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                                <strong style="font-size: 12px;">${record.name}</strong>
+                                <span style="background: ${statusColor}; padding: 2px 8px; border-radius: 10px; font-size: 9px;">
+                                    ${record.status}
+                                </span>
+                            </div>
+                            <div style="color: #aaa; font-size: 10px; margin: 3px 0;">
+                                <strong>Crime:</strong> ${record.crime}
+                            </div>
+                            <div style="color: #aaa; font-size: 10px; margin: 3px 0;">
+                                <strong>Year:</strong> ${record.year}
+                            </div>
+                            <div style="color: #ccc; font-size: 10px; margin-top: 6px; padding-top: 6px; border-top: 1px solid #444;">
+                                ${record.details}
+                            </div>
+                        `;
+                        listDiv.appendChild(recordDiv);
+                    });
+                } else {
+                    listDiv.innerHTML = '<p style="color: #888; text-align: center; padding: 15px; font-size: 10px;">No criminal records found.</p>';
+                }
+            } catch (error) {
+                console.error('Error loading criminal records:', error);
+                document.getElementById('criminalRecordsList').innerHTML = 
+                    '<p style="color: #ef4444; font-size: 10px;">Error loading records</p>';
+            }
+        }
+        
+        async function searchCriminalRecord() {
+            const searchInput = document.getElementById('recordSearchInput');
+            const name = searchInput.value.trim();
+            
+            if (!name) {
+                alert('Please enter a name to search');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_URL}/criminal-records/search/${encodeURIComponent(name)}`);
+                const data = await response.json();
+                
+                const listDiv = document.getElementById('criminalRecordsList');
+                
+                if (data.found) {
+                    const record = data.record;
+                    const statusColor = record.status === 'Flagged' ? '#ef4444' : '#10b981';
+                    listDiv.innerHTML = `
+                        <div style="padding: 15px; background: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%); border-left: 4px solid ${statusColor}; border-radius: 5px; font-size: 11px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                                <strong style="font-size: 13px;">${record.name}</strong>
+                                <span style="background: ${statusColor}; padding: 4px 12px; border-radius: 10px; font-size: 10px;">
+                                    ${record.status}
+                                </span>
+                            </div>
+                            <div style="color: #aaa; font-size: 10px; margin: 6px 0;">
+                                <strong>Crime:</strong> ${record.crime}
+                            </div>
+                            <div style="color: #aaa; font-size: 10px; margin: 6px 0;">
+                                <strong>Year:</strong> ${record.year}
+                            </div>
+                            <div style="color: #ccc; font-size: 10px; margin-top: 10px; padding-top: 10px; border-top: 1px solid #444;">
+                                <strong>Details:</strong><br>${record.details}
+                            </div>
+                            <button onclick="loadCriminalRecords()" style="margin-top: 12px; width: 100%; padding: 8px; background: #444; border: none; border-radius: 5px; color: white; cursor: pointer; font-size: 10px;">
+                                ← Back to All Records
+                            </button>
+                        </div>
+                    `;
+                } else {
+                    listDiv.innerHTML = `
+                        <div style="padding: 15px; text-align: center; color: #888; font-size: 11px;">
+                            <p style="font-size: 12px; margin-bottom: 12px;">❌ ${data.message}</p>
+                            <button onclick="loadCriminalRecords()" style="padding: 8px 15px; background: #667eea; border: none; border-radius: 5px; color: white; cursor: pointer; font-size: 10px;">
+                                View All Records
+                            </button>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Error searching record:', error);
+                alert('Error searching criminal record');
+            }
+        }
+        
         // Chat
         document.getElementById('sendBtn').addEventListener('click', sendMessage);
         document.getElementById('chatInput').addEventListener('keypress', (e) => { if (e.key === 'Enter') sendMessage(); });
@@ -979,6 +1149,107 @@
                 errorMsg.innerHTML = '<div class="chat-bubble" style="color: #e74c3c;">Error</div>';
                 messages.appendChild(errorMsg);
             } finally { document.getElementById('sendBtn').disabled = false; }
+        }
+        
+        // Report Generation - Only for Judge
+        const userRole = sessionStorage.getItem('user_role') || 'Observer';
+        if (userRole === 'Judge') {
+            document.getElementById('judgeStatementSection').style.display = 'block';
+            document.getElementById('reportTabBtn').style.display = 'block';
+        }
+        
+        let currentReportText = '';
+        let isEditMode = false;
+        
+        document.getElementById('generateReportBtn').addEventListener('click', generateReport);
+        document.getElementById('editReportBtn').addEventListener('click', enableEditMode);
+        document.getElementById('downloadReportBtn').addEventListener('click', downloadReport);
+        
+        async function generateReport() {
+            const btn = document.getElementById('generateReportBtn');
+            const preview = document.getElementById('reportPreview');
+            const placeholder = document.getElementById('reportPlaceholder');
+            const actions = document.getElementById('reportActions');
+            const content = document.getElementById('reportContent');
+            
+            btn.disabled = true;
+            btn.textContent = '⏳ Generating Report...';
+            
+            try {
+                const judgeStatement = document.getElementById('judgeStatement').value.trim();
+                
+                // Calculate duration
+                const startTime = new Date(); // In real app, get from meeting start
+                const duration = 'N/A'; // Calculate actual duration
+                
+                const response = await fetch(`${API_URL}/generate-report`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        meeting_id: meetingId,
+                        judge_statement: judgeStatement,
+                        criminal_records_checked: [], // Add actual checked records
+                        chat_history: [],
+                        duration: duration
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    currentReportText = data.report;
+                    content.textContent = currentReportText;
+                    preview.style.display = 'block';
+                    placeholder.style.display = 'none';
+                    actions.style.display = 'flex';
+                    btn.textContent = '🔄 Regenerate Report';
+                } else {
+                    alert('Failed to generate report: ' + (data.error || 'Unknown error'));
+                    btn.textContent = '📋 Generate Report';
+                }
+            } catch (error) {
+                console.error('Report generation error:', error);
+                alert('Error generating report. Please try again.');
+                btn.textContent = '📋 Generate Report';
+            } finally {
+                btn.disabled = false;
+            }
+        }
+        
+        function enableEditMode() {
+            const content = document.getElementById('reportContent');
+            const editBtn = document.getElementById('editReportBtn');
+            
+            if (!isEditMode) {
+                // Enable editing
+                const textarea = document.createElement('textarea');
+                textarea.id = 'reportEditor';
+                textarea.value = currentReportText;
+                textarea.style.cssText = 'width: 100%; height: 100%; background: #1a1a1a; color: white; border: none; padding: 0; font-family: inherit; font-size: inherit; line-height: inherit; resize: none;';
+                content.innerHTML = '';
+                content.appendChild(textarea);
+                editBtn.textContent = '💾 Save Changes';
+                isEditMode = true;
+            } else {
+                // Save changes
+                const textarea = document.getElementById('reportEditor');
+                currentReportText = textarea.value;
+                content.textContent = currentReportText;
+                editBtn.textContent = '✏️ Edit';
+                isEditMode = false;
+            }
+        }
+        
+        function downloadReport() {
+            const blob = new Blob([currentReportText], { type: 'text/plain' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `Court_Report_${meetingId}_${new Date().toISOString().split('T')[0]}.txt`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
         }
         
         // Leave
