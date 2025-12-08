@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nyaya-Sahayak | Join Meeting</title>
+    <title>Nyaya-Sahayak | AI-Powered Legal Platform</title>
     <script src="config.js"></script>
     <style>
         * {
@@ -15,426 +15,781 @@
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
+            color: #333;
+            overflow-x: hidden;
+        }
+
+        /* Navbar */
+        .navbar {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 1.2rem 5%;
             display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .navbar-brand {
+            font-size: 1.8rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .nav-link {
+            color: #666;
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.3s;
+            font-size: 1rem;
+        }
+
+        .nav-link:hover {
+            color: #667eea;
+        }
+
+        .nav-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: transform 0.3s, box-shadow 0.3s;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .nav-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        /* Hero Section */
+        .hero {
+            text-align: center;
+            padding: 6rem 5% 4rem;
+            color: white;
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            font-weight: 800;
+            margin-bottom: 1.5rem;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            line-height: 1.2;
+        }
+
+        .hero p {
+            font-size: 1.4rem;
+            opacity: 0.95;
+            max-width: 700px;
+            margin: 0 auto 2.5rem;
+            line-height: 1.6;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 1.5rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn-primary, .btn-secondary {
+            padding: 1rem 2.5rem;
+            border-radius: 30px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: white;
+            color: #667eea;
+            box-shadow: 0 4px 20px rgba(255,255,255,0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 30px rgba(255,255,255,0.4);
+        }
+
+        .btn-secondary {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 2px solid white;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-3px);
+        }
+
+        /* Stats Section */
+        .stats {
+            background: white;
+            padding: 3rem 5%;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+            text-align: center;
+            box-shadow: 0 -5px 30px rgba(0,0,0,0.1);
+        }
+
+        .stat-item h3 {
+            font-size: 2.5rem;
+            color: #667eea;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-item p {
+            color: #666;
+            font-weight: 600;
+        }
+
+        /* Features Section */
+        .features {
+            padding: 5rem 5%;
+            background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .section-title {
+            text-align: center;
+            margin-bottom: 3rem;
+            color: white;
+        }
+
+        .section-title h2 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .section-title p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .feature-card {
+            background: rgba(255,255,255,0.95);
+            padding: 2.5rem;
+            border-radius: 20px;
+            text-align: center;
+            transition: transform 0.3s, box-shadow 0.3s;
+            cursor: pointer;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+        }
+
+        .feature-icon {
+            font-size: 3.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .feature-card h3 {
+            font-size: 1.5rem;
+            color: #333;
+            margin-bottom: 1rem;
+        }
+
+        .feature-card p {
+            color: #666;
+            line-height: 1.6;
+        }
+
+        .feature-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 0.3rem 1rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            margin-top: 1rem;
+            font-weight: 600;
+        }
+
+        .feature-badge.coming-soon {
+            background: #95a5a6;
+        }
+
+        /* Services Section */
+        .services {
+            padding: 5rem 5%;
+            background: white;
+        }
+
+        .service-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 3rem;
+            border-radius: 20px;
+            margin-bottom: 2rem;
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 2rem;
+            align-items: center;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+        }
+
+        .service-content h3 {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .service-content ul {
+            list-style: none;
+            margin: 1rem 0;
+        }
+
+        .service-content li {
+            padding: 0.5rem 0;
+            padding-left: 1.5rem;
+            position: relative;
+        }
+
+        .service-content li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #ffd700;
+            font-weight: bold;
+        }
+
+        .service-btn {
+            background: white;
+            color: #667eea;
+            padding: 1rem 2rem;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: 600;
+            display: inline-block;
+            margin-top: 1rem;
+            transition: all 0.3s;
+        }
+
+        .service-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 20px rgba(255,255,255,0.3);
+        }
+
+        /* Reviews Section */
+        .reviews-section {
+            padding: 5rem 5%;
+            background: linear-gradient(180deg, #764ba2 0%, #667eea 100%);
+            color: white;
+        }
+
+        .review-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 3rem;
+        }
+
+        .review-header h2 {
+            font-size: 2.5rem;
+        }
+
+        .review-btn {
+            background: white;
+            color: #667eea;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 25px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 1rem;
+        }
+
+        .review-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 20px rgba(255,255,255,0.3);
+        }
+
+        .reviews-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .review-card {
+            background: rgba(255,255,255,0.15);
+            backdrop-filter: blur(10px);
+            padding: 2rem;
+            border-radius: 15px;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .review-header-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .reviewer-info h4 {
+            font-size: 1.2rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .reviewer-role {
+            opacity: 0.8;
+            font-size: 0.9rem;
+        }
+
+        .rating {
+            color: #ffd700;
+            font-size: 1.2rem;
+        }
+
+        .review-text {
+            line-height: 1.6;
+            opacity: 0.95;
+        }
+
+        .review-date {
+            opacity: 0.7;
+            font-size: 0.85rem;
+            margin-top: 1rem;
+        }
+
+        /* Review Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 2000;
             align-items: center;
             justify-content: center;
-            padding: 20px;
         }
 
-        .login-container {
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
             background: white;
+            padding: 2.5rem;
             border-radius: 20px;
-            padding: 50px;
             max-width: 500px;
-            width: 100%;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
         }
 
-        .logo {
-            text-align: center;
-            font-size: 48px;
-            margin-bottom: 10px;
-        }
-
-        .title {
-            text-align: center;
-            font-size: 32px;
-            font-weight: 700;
-            color: #2c3e50;
-            margin-bottom: 10px;
-        }
-
-        .subtitle {
-            text-align: center;
-            color: #7f8c8d;
-            font-size: 16px;
-            margin-bottom: 40px;
+        .modal-content h3 {
+            color: #667eea;
+            margin-bottom: 1.5rem;
+            font-size: 1.8rem;
         }
 
         .form-group {
-            margin-bottom: 25px;
+            margin-bottom: 1.5rem;
         }
 
         .form-group label {
             display: block;
+            margin-bottom: 0.5rem;
+            color: #333;
             font-weight: 600;
-            color: #2c3e50;
-            margin-bottom: 8px;
-            font-size: 14px;
         }
 
-        .form-group input {
+        .form-group input, .form-group select, .form-group textarea {
             width: 100%;
-            padding: 15px;
+            padding: 0.75rem;
             border: 2px solid #e0e0e0;
             border-radius: 10px;
-            font-size: 16px;
-            transition: all 0.3s;
+            font-size: 1rem;
+            font-family: inherit;
         }
 
-        .form-group input:focus {
-            outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
         }
 
-        .btn {
-            width: 100%;
-            padding: 15px;
+        .form-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+        }
+
+        .btn-submit, .btn-cancel {
+            padding: 0.75rem 1.5rem;
             border: none;
             border-radius: 10px;
-            font-size: 16px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s;
-            margin-bottom: 15px;
         }
 
-        .btn-primary {
+        .btn-submit {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
         }
 
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
-        }
-
-        .btn-secondary {
-            background: white;
-            color: #667eea;
-            border: 2px solid #667eea;
-        }
-
-        .btn-secondary:hover {
-            background: #f8f9fa;
-        }
-
-        .divider {
-            text-align: center;
-            margin: 30px 0;
-            position: relative;
-        }
-
-        .divider::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 0;
-            right: 0;
-            height: 1px;
+        .btn-cancel {
             background: #e0e0e0;
+            color: #666;
         }
 
-        .divider span {
-            background: white;
-            padding: 0 15px;
-            position: relative;
-            color: #7f8c8d;
-            font-size: 14px;
-        }
-
-        .status-message {
-            padding: 12px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            font-size: 14px;
-            display: none;
-        }
-
-        .status-message.error {
-            background: #fee;
-            color: #c33;
-            border: 1px solid #fcc;
-        }
-
-        .status-message.success {
-            background: #efe;
-            color: #3c3;
-            border: 1px solid #cfc;
-        }
-
-        .join-section {
-            display: none;
-        }
-
-        .join-section.active {
-            display: block;
-        }
-
-        .back-link {
+        /* Footer */
+        .footer {
+            background: rgba(0,0,0,0.2);
+            color: white;
             text-align: center;
-            margin-top: 15px;
+            padding: 2rem;
         }
 
-        .back-link a {
-            color: #667eea;
-            text-decoration: none;
-            font-size: 14px;
-            cursor: pointer;
-        }
-
-        .back-link a:hover {
-            text-decoration: underline;
-        }
-
-        .old-version-link {
-            text-align: center;
-            margin-top: 20px;
-            padding-top: 20px;
-            border-top: 1px solid #e0e0e0;
-        }
-
-        .old-version-link a {
-            color: #7f8c8d;
-            text-decoration: none;
-            font-size: 13px;
-        }
-
-        .old-version-link a:hover {
-            color: #667eea;
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 2.5rem; }
+            .hero p { font-size: 1.1rem; }
+            .service-card { grid-template-columns: 1fr; }
+            .nav-links { display: none; }
+            .review-header { flex-direction: column; gap: 1rem; }
         }
     </style>
 </head>
 <body>
-    <div class="login-container">
-        <div class="logo">⚖️</div>
-        <div class="title">Nyaya-Sahayak</div>
-        <div class="subtitle">AI-Powered Courtroom Assistant</div>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="navbar-brand">⚖️ Nyaya-Sahayak</div>
+        <div class="nav-links">
+            <a href="#features" class="nav-link">Features</a>
+            <a href="#services" class="nav-link">Services</a>
+            <a href="#reviews" class="nav-link">Reviews</a>
+            <a href="meeting-lobby.html" class="nav-btn">Get Started</a>
+        </div>
+    </nav>
 
-        <div id="statusMessage" class="status-message"></div>
+    <!-- Hero Section -->
+    <section class="hero">
+        <h1>AI-Powered Legal Platform<br>for Modern Justice</h1>
+        <p>Transform your legal proceedings with cutting-edge AI technology. From virtual courtrooms to document analysis.</p>
+        <div class="hero-buttons">
+            <a href="meeting-lobby.html" class="btn-primary">🎥 Start Virtual Court</a>
+            <a href="legal-docs/index.html" class="btn-secondary">📄 Analyze Document</a>
+        </div>
+    </section>
 
-        <!-- Main Section (Create/Join) -->
-        <div id="mainSection">
-            <div class="form-group">
-                <label for="userName">Your Name</label>
-                <input type="text" id="userName" placeholder="Enter your full name" required>
+    <!-- Stats Section -->
+    <section class="stats">
+        <div class="stat-item">
+            <h3>99%</h3>
+            <p>Accuracy</p>
+        </div>
+        <div class="stat-item">
+            <h3>24/7</h3>
+            <p>Available</p>
+        </div>
+        <div class="stat-item">
+            <h3>100+</h3>
+            <p>Users</p>
+        </div>
+        <div class="stat-item">
+            <h3>5★</h3>
+            <p>Rated</p>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features" id="features">
+        <div class="section-title">
+            <h2>Comprehensive Legal AI Suite</h2>
+            <p>Everything you need for modern legal proceedings</p>
+        </div>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">🎥</div>
+                <h3>Virtual Court</h3>
+                <p>Multi-participant video conferencing with AI-powered real-time transcription and evidence management.</p>
+                <span class="feature-badge">Active</span>
             </div>
-
-            <div class="form-group">
-                <label for="userRole">Your Role</label>
-                <select id="userRole" style="width: 100%; padding: 15px; border: 2px solid #e0e0e0; border-radius: 10px; font-size: 16px; background: white; cursor: pointer;">
-                    <option value="Judge">⚖️ Judge</option>
-                    <option value="Lawyer">👔 Lawyer</option>
-                    <option value="Witness">🗣️ Witness</option>
-                    <option value="Defendant">👤 Defendant</option>
-                    <option value="Prosecutor">⚔️ Prosecutor</option>
-                    <option value="Observer">👁️ Observer</option>
-                </select>
+            <div class="feature-card">
+                <div class="feature-icon">📝</div>
+                <h3>Live Transcription</h3>
+                <p>Automatic speech-to-text with speaker identification and timestamp tracking for accurate records.</p>
+                <span class="feature-badge">Active</span>
             </div>
-
-            <button class="btn btn-primary" onclick="createMeeting()">
-                🎯 Create New Meeting
-            </button>
-
-            <div class="divider">
-                <span>OR</span>
+            <div class="feature-card">
+                <div class="feature-icon">📂</div>
+                <h3>Evidence Manager</h3>
+                <p>Upload, organize, and present documents, images, and files with OCR text extraction.</p>
+                <span class="feature-badge">Active</span>
             </div>
-
-            <button class="btn btn-secondary" onclick="showJoinSection()">
-                👥 Join Existing Meeting
-            </button>
-
-            <div class="old-version-link">
-                <a href="standalone.html">Use standalone version (no meeting)</a>
+            <div class="feature-card">
+                <div class="feature-icon">🔍</div>
+                <h3>Criminal Records</h3>
+                <p>Integrated database for quick access to defendant backgrounds and case histories.</p>
+                <span class="feature-badge">Active</span>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🤖</div>
+                <h3>AI Legal Assistant</h3>
+                <p>Real-time legal research, case suggestions, and intelligent query responses during proceedings.</p>
+                <span class="feature-badge">Active</span>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">📄</div>
+                <h3>Document Analyzer</h3>
+                <p>Simplify complex legal documents with AI-powered summaries and term definitions.</p>
+                <span class="feature-badge">Active</span>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">📊</div>
+                <h3>Court Reports</h3>
+                <p>Automated generation of professional court proceeding reports with AI summaries.</p>
+                <span class="feature-badge">Judge Only</span>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🌐</div>
+                <h3>Case Law Search</h3>
+                <p>AI-powered search for Indian Supreme Court and High Court judgments.</p>
+                <span class="feature-badge coming-soon">Coming Soon</span>
             </div>
         </div>
+    </section>
 
-        <!-- Join Section -->
-        <div id="joinSection" class="join-section">
-            <div class="form-group">
-                <label for="joinName">Your Name</label>
-                <input type="text" id="joinName" placeholder="Enter your full name" required>
+    <!-- Services Section -->
+    <section class="services" id="services">
+        <div class="section-title" style="color: #333;">
+            <h2>Our Services</h2>
+            <p style="color: #666;">Choose the service that fits your needs</p>
+        </div>
+
+        <div class="service-card">
+            <div class="service-content">
+                <h3>🎥 Virtual Court Proceedings</h3>
+                <p>Conduct complete legal proceedings online with professional tools</p>
+                <ul>
+                    <li>HD video conferencing with screen sharing</li>
+                    <li>Real-time AI transcription with speaker tags</li>
+                    <li>Evidence upload and presentation</li>
+                    <li>Criminal records integration</li>
+                    <li>Live AI legal assistant</li>
+                    <li>Automated court reports (Judges)</li>
+                    <li>Role-based access control</li>
+                </ul>
+                <a href="meeting-lobby.html" class="service-btn">Start Meeting →</a>
             </div>
+            <div style="font-size: 8rem; text-align: center;">🎥</div>
+        </div>
 
-            <div class="form-group">
-                <label for="joinRole">Your Role</label>
-                <select id="joinRole" style="width: 100%; padding: 15px; border: 2px solid #e0e0e0; border-radius: 10px; font-size: 16px; background: white; cursor: pointer;">
-                    <option value="Judge">⚖️ Judge</option>
-                    <option value="Lawyer">👔 Lawyer</option>
-                    <option value="Witness">🗣️ Witness</option>
-                    <option value="Defendant">👤 Defendant</option>
-                    <option value="Prosecutor">⚔️ Prosecutor</option>
-                    <option value="Observer">👁️ Observer</option>
-                </select>
+        <div class="service-card" style="background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);">
+            <div style="font-size: 8rem; text-align: center;">📄</div>
+            <div class="service-content">
+                <h3>📄 Legal Document Demystifier</h3>
+                <p>Understand complex legal documents in simple language</p>
+                <ul>
+                    <li>Upload PDFs, DOCX, images, or paste text</li>
+                    <li>Color-coded summaries (Critical/Amounts/Dates)</li>
+                    <li>Key points extraction</li>
+                    <li>Legal terminology explanations</li>
+                    <li>Interactive Q&A about documents</li>
+                    <li>Bilingual support (English/Hindi)</li>
+                    <li>Instant analysis with AI</li>
+                </ul>
+                <a href="legal-docs/index.html" class="service-btn">Analyze Document →</a>
             </div>
+        </div>
+    </section>
 
-            <div class="form-group">
-                <label for="meetingId">Meeting ID</label>
-                <input type="text" id="meetingId" placeholder="Enter 6-digit meeting code" 
-                       maxlength="6" style="text-transform: uppercase;" required>
+    <!-- Reviews Section -->
+    <section class="reviews-section" id="reviews">
+        <div class="review-header">
+            <div>
+                <h2>⭐ User Reviews</h2>
+                <p>See what legal professionals are saying</p>
             </div>
-
-            <button class="btn btn-primary" onclick="joinMeeting()">
-                Join Meeting
-            </button>
-
-            <div class="back-link">
-                <a onclick="showMainSection()">← Back to main menu</a>
+            <button class="review-btn" onclick="openReviewModal()">✍️ Write a Review</button>
+        </div>
+        <div class="reviews-grid" id="reviewsGrid">
+            <!-- Reviews will be loaded here -->
+            <div class="review-card">
+                <div class="review-header-info">
+                    <div class="reviewer-info">
+                        <h4>Loading reviews...</h4>
+                        <p class="reviewer-role">Please wait</p>
+                    </div>
+                    <div class="rating">★★★★★</div>
+                </div>
+                <p class="review-text">Fetching user reviews from database...</p>
             </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>&copy; 2025 Nyaya-Sahayak. All rights reserved.</p>
+        <p style="margin-top: 0.5rem; opacity: 0.8;">Making justice accessible through AI technology</p>
+    </footer>
+
+    <!-- Review Modal -->
+    <div class="modal" id="reviewModal">
+        <div class="modal-content">
+            <h3>✍️ Write a Review</h3>
+            <form id="reviewForm">
+                <div class="form-group">
+                    <label>Your Name *</label>
+                    <input type="text" id="reviewerName" required placeholder="Enter your name">
+                </div>
+                <div class="form-group">
+                    <label>Your Role *</label>
+                    <select id="reviewerRole" required>
+                        <option value="">Select role</option>
+                        <option value="Judge">Judge</option>
+                        <option value="Lawyer">Lawyer</option>
+                        <option value="Prosecutor">Prosecutor</option>
+                        <option value="Legal Professional">Legal Professional</option>
+                        <option value="Student">Law Student</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Rating *</label>
+                    <select id="reviewRating" required>
+                        <option value="5">⭐⭐⭐⭐⭐ Excellent</option>
+                        <option value="4">⭐⭐⭐⭐ Good</option>
+                        <option value="3">⭐⭐⭐ Average</option>
+                        <option value="2">⭐⭐ Below Average</option>
+                        <option value="1">⭐ Poor</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Your Review *</label>
+                    <textarea id="reviewText" required placeholder="Share your experience with Nyaya-Sahayak..."></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn-cancel" onclick="closeReviewModal()">Cancel</button>
+                    <button type="submit" class="btn-submit">Submit Review</button>
+                </div>
+            </form>
         </div>
     </div>
 
     <script>
         const API_URL = CONFIG.API_URL;
 
-        function showMessage(message, type = 'error') {
-            const statusEl = document.getElementById('statusMessage');
-            statusEl.textContent = message;
-            statusEl.className = `status-message ${type}`;
-            statusEl.style.display = 'block';
-            
-            setTimeout(() => {
-                statusEl.style.display = 'none';
-            }, 5000);
-        }
+        // Load reviews on page load
+        window.addEventListener('load', loadReviews);
 
-        function showJoinSection() {
-            document.getElementById('mainSection').style.display = 'none';
-            document.getElementById('joinSection').classList.add('active');
-            document.getElementById('joinName').value = document.getElementById('userName').value;
-        }
-
-        function showMainSection() {
-            document.getElementById('mainSection').style.display = 'block';
-            document.getElementById('joinSection').classList.remove('active');
-        }
-
-        async function createMeeting() {
-            const name = document.getElementById('userName').value.trim();
-            const role = document.getElementById('userRole').value;
-            
-            if (!name) {
-                showMessage('Please enter your name', 'error');
-                return;
-            }
-
+        async function loadReviews() {
             try {
-                // Step 1: Login (create user)
-                const loginResponse = await fetch(`${API_URL}/auth/login`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ name, role })
-                });
-
-                if (!loginResponse.ok) {
-                    throw new Error('Failed to create user session');
-                }
-
-                const userData = await loginResponse.json();
+                const response = await fetch(`${API_URL}/get-reviews`);
+                const data = await response.json();
+                const reviews = data.reviews || [];
                 
-                // Step 2: Create meeting
-                const meetingResponse = await fetch(`${API_URL}/meeting/create`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ user_id: userData.user_id })
-                });
-
-                if (!meetingResponse.ok) {
-                    throw new Error('Failed to create meeting');
-                }
-
-                const meetingData = await meetingResponse.json();
-
-                // Save to session storage
-                sessionStorage.setItem('user', JSON.stringify(userData));
-                sessionStorage.setItem('meeting_id', meetingData.meeting_id);
-                sessionStorage.setItem('is_host', 'true');
-                sessionStorage.setItem('user_role', role);
-
-                showMessage('Meeting created successfully! Redirecting...', 'success');
+                const reviewsGrid = document.getElementById('reviewsGrid');
                 
-                setTimeout(() => {
-                    window.location.href = 'meeting.html';
-                }, 1000);
-
+                if (reviews.length === 0) {
+                    reviewsGrid.innerHTML = `
+                        <div class="review-card">
+                            <div class="review-header-info">
+                                <div class="reviewer-info">
+                                    <h4>No reviews yet</h4>
+                                    <p class="reviewer-role">Be the first to review!</p>
+                                </div>
+                                <div class="rating">⭐</div>
+                            </div>
+                            <p class="review-text">Share your experience with Nyaya-Sahayak and help others discover our platform.</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                reviewsGrid.innerHTML = reviews.map(review => {
+                    const stars = '⭐'.repeat(review.rating);
+                    return `
+                        <div class="review-card">
+                            <div class="review-header-info">
+                                <div class="reviewer-info">
+                                    <h4>${review.name}</h4>
+                                    <p class="reviewer-role">${review.role}</p>
+                                </div>
+                                <div class="rating">${stars}</div>
+                            </div>
+                            <p class="review-text">${review.review}</p>
+                            <p class="review-date">${review.date}</p>
+                        </div>
+                    `;
+                }).join('');
             } catch (error) {
-                console.error('Error:', error);
-                showMessage('Failed to create meeting. Please try again.', 'error');
+                console.error('Error loading reviews:', error);
             }
         }
 
-        async function joinMeeting() {
-            const name = document.getElementById('joinName').value.trim();
-            const role = document.getElementById('joinRole').value;
-            const meetingId = document.getElementById('meetingId').value.trim().toUpperCase();
+        function openReviewModal() {
+            document.getElementById('reviewModal').classList.add('active');
+        }
+
+        function closeReviewModal() {
+            document.getElementById('reviewModal').classList.remove('active');
+            document.getElementById('reviewForm').reset();
+        }
+
+        document.getElementById('reviewForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
             
-            if (!name) {
-                showMessage('Please enter your name', 'error');
-                return;
-            }
-
-            if (!meetingId || meetingId.length !== 6) {
-                showMessage('Please enter a valid 6-digit meeting code', 'error');
-                return;
-            }
-
+            const reviewData = {
+                name: document.getElementById('reviewerName').value,
+                role: document.getElementById('reviewerRole').value,
+                rating: parseInt(document.getElementById('reviewRating').value),
+                review: document.getElementById('reviewText').value
+            };
+            
             try {
-                // Step 1: Login (create user)
-                const loginResponse = await fetch(`${API_URL}/auth/login`, {
+                const response = await fetch(`${API_URL}/submit-review`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ name, role })
+                    body: JSON.stringify(reviewData)
                 });
-
-                if (!loginResponse.ok) {
-                    throw new Error('Failed to create user session');
-                }
-
-                const userData = await loginResponse.json();
                 
-                // Step 2: Join meeting
-                const joinResponse = await fetch(`${API_URL}/meeting/join`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        user_id: userData.user_id,
-                        meeting_id: meetingId 
-                    })
-                });
-
-                if (!joinResponse.ok) {
-                    const errorData = await joinResponse.json();
-                    throw new Error(errorData.error || 'Failed to join meeting');
+                if (response.ok) {
+                    alert('Thank you for your review! 🎉');
+                    closeReviewModal();
+                    loadReviews(); // Reload reviews
+                } else {
+                    alert('Failed to submit review. Please try again.');
                 }
-
-                const joinData = await joinResponse.json();
-
-                // Save to session storage
-                sessionStorage.setItem('user', JSON.stringify(userData));
-                sessionStorage.setItem('meeting_id', meetingId);
-                sessionStorage.setItem('is_host', 'false');
-                sessionStorage.setItem('user_role', role);
-
-                showMessage('Joined meeting successfully! Redirecting...', 'success');
-                
-                setTimeout(() => {
-                    window.location.href = 'meeting.html';
-                }, 1000);
-
             } catch (error) {
-                console.error('Error:', error);
-                showMessage(error.message || 'Failed to join meeting. Please check the meeting code.', 'error');
+                console.error('Error submitting review:', error);
+                alert('Failed to submit review. Please try again.');
             }
-        }
-
-        // Enter key support
-        document.getElementById('userName').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') createMeeting();
         });
 
-        document.getElementById('joinName').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') joinMeeting();
-        });
-
-        document.getElementById('meetingId').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') joinMeeting();
-        });
-
-        // Auto-uppercase meeting ID
-        document.getElementById('meetingId').addEventListener('input', (e) => {
-            e.target.value = e.target.value.toUpperCase();
+        // Close modal on outside click
+        document.getElementById('reviewModal').addEventListener('click', (e) => {
+            if (e.target.id === 'reviewModal') {
+                closeReviewModal();
+            }
         });
     </script>
 </body>

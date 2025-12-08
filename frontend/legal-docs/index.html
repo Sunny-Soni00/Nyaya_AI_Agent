@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Legal Document Demystifier | Nyaya-Sahayak</title>
+    <script src="../config.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0A192F 0%, #172A45 100%);
+            color: #e2e8f0;
+            min-height: 100vh;
+        }
+
+        .navbar {
+            background: rgba(10, 25, 47, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(100, 116, 139, 0.3);
+            padding: 1rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .navbar-brand {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .nav-link {
+            color: #94a3b8;
+            text-decoration: none;
+            transition: color 0.3s;
+            font-weight: 500;
+        }
+
+        .nav-link:hover {
+            color: #667eea;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 3rem 2rem;
+        }
+
+        .hero {
+            text-align: center;
+            margin-bottom: 4rem;
+        }
+
+        .hero h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            color: #94a3b8;
+        }
+
+        .input-section {
+            background: rgba(23, 42, 69, 0.6);
+            border: 1px solid rgba(100, 116, 139, 0.3);
+            border-radius: 1rem;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .input-tabs {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            border-bottom: 2px solid rgba(100, 116, 139, 0.3);
+        }
+
+        .input-tab {
+            padding: 0.75rem 1.5rem;
+            background: transparent;
+            border: none;
+            color: #94a3b8;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .input-tab.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+
+        .input-content {
+            display: none;
+        }
+
+        .input-content.active {
+            display: block;
+        }
+
+        textarea, input[type="url"] {
+            width: 100%;
+            background: #0A192F;
+            border: 1px solid rgba(100, 116, 139, 0.3);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            color: #e2e8f0;
+            font-size: 1rem;
+            resize: vertical;
+            min-height: 150px;
+        }
+
+        input[type="url"] {
+            min-height: auto;
+        }
+
+        textarea:focus, input[type="url"]:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .file-upload {
+            border: 3px dashed rgba(100, 116, 139, 0.3);
+            border-radius: 0.5rem;
+            padding: 3rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .file-upload:hover {
+            border-color: #667eea;
+            background: rgba(102, 126, 234, 0.05);
+        }
+
+        .file-upload-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .file-list {
+            margin-top: 1rem;
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 0.5rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background: transparent;
+            border: 2px solid #667eea;
+            margin-left: 1rem;
+        }
+
+        .results-section {
+            display: none;
+            background: rgba(23, 42, 69, 0.6);
+            border: 1px solid rgba(100, 116, 139, 0.3);
+            border-radius: 1rem;
+            padding: 2rem;
+        }
+
+        .results-section.active {
+            display: block;
+        }
+
+        .result-tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .result-tab {
+            padding: 0.75rem 1.5rem;
+            background: rgba(10, 25, 47, 0.6);
+            border: 1px solid rgba(100, 116, 139, 0.3);
+            border-radius: 0.5rem;
+            color: #94a3b8;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .result-tab.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: transparent;
+        }
+
+        .result-content {
+            display: none;
+        }
+
+        .result-content.active {
+            display: block;
+        }
+
+        .summary-text {
+            line-height: 1.8;
+            font-size: 1.1rem;
+        }
+
+        .summary-text .critical {
+            background: rgba(239, 68, 68, 0.2);
+            color: #fca5a5;
+            padding: 0.2rem 0.4rem;
+            border-radius: 0.25rem;
+            font-weight: 600;
+        }
+
+        .summary-text .amount {
+            background: rgba(34, 197, 94, 0.2);
+            color: #86efac;
+            padding: 0.2rem 0.4rem;
+            border-radius: 0.25rem;
+            font-weight: 600;
+        }
+
+        .summary-text .date {
+            background: rgba(251, 146, 60, 0.2);
+            color: #fdba74;
+            padding: 0.2rem 0.4rem;
+            border-radius: 0.25rem;
+            font-weight: 600;
+        }
+
+        .key-points {
+            list-style: none;
+        }
+
+        .key-points li {
+            padding: 0.75rem;
+            margin-bottom: 0.5rem;
+            background: rgba(10, 25, 47, 0.6);
+            border-left: 4px solid #667eea;
+            border-radius: 0.25rem;
+        }
+
+        .word-helper-item {
+            background: rgba(10, 25, 47, 0.6);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .word-helper-item h3 {
+            color: #667eea;
+            margin-bottom: 0.5rem;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 3rem;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(102, 126, 234, 0.1);
+            border-top-color: #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .qa-section {
+            margin-top: 2rem;
+        }
+
+        .qa-input {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .qa-input input {
+            flex: 1;
+            background: #0A192F;
+            border: 1px solid rgba(100, 116, 139, 0.3);
+            border-radius: 0.5rem;
+            padding: 0.75rem;
+            color: #e2e8f0;
+        }
+
+        .qa-answer {
+            background: rgba(102, 126, 234, 0.1);
+            border-left: 4px solid #667eea;
+            padding: 1rem;
+            border-radius: 0.25rem;
+            margin-bottom: 1rem;
+        }
+
+        .error-message {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #fca5a5;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin: 1rem 0;
+        }
+
+        .legend {
+            display: flex;
+            gap: 2rem;
+            margin: 1rem 0;
+            flex-wrap: wrap;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .legend-box {
+            width: 20px;
+            height: 20px;
+            border-radius: 0.25rem;
+        }
+
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 2rem; }
+            .container { padding: 2rem 1rem; }
+            .nav-links { gap: 1rem; }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-brand">⚖️ Nyaya-Sahayak</div>
+        <div class="nav-links">
+            <a href="../index.html" class="nav-link">← Back to Home</a>
+            <a href="../meeting-lobby.html" class="nav-link">Virtual Court</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="hero">
+            <h1>📄 Legal Document Demystifier</h1>
+            <p>Transform complex legal documents into simple, understandable language</p>
+        </div>
+
+        <div class="input-section">
+            <div class="input-tabs">
+                <button class="input-tab active" data-tab="text">📝 Paste Text</button>
+                <button class="input-tab" data-tab="file">📁 Upload Files</button>
+                <button class="input-tab" data-tab="link">🔗 From Link</button>
+            </div>
+
+            <div class="input-content active" id="text-input">
+                <textarea id="textContent" placeholder="Paste your legal document text here..."></textarea>
+            </div>
+
+            <div class="input-content" id="file-input">
+                <label for="fileUpload" class="file-upload">
+                    <div class="file-upload-icon">📤</div>
+                    <div>
+                        <strong>Click to upload</strong> or drag and drop<br>
+                        <small>PDF, DOCX, TXT, Images (JPG, PNG, GIF) • Up to 5 files, 50MB total</small>
+                    </div>
+                    <div id="fileList" class="file-list"></div>
+                </label>
+                <input type="file" id="fileUpload" multiple accept=".pdf,.docx,.txt,.jpg,.jpeg,.png,.gif,.bmp,.webp" style="display: none;">
+            </div>
+
+            <div class="input-content" id="link-input">
+                <input type="url" id="linkUrl" placeholder="Enter public URL to analyze...">
+            </div>
+
+            <div style="text-align: center; margin-top: 2rem;">
+                <button class="btn" id="analyzeBtn">✨ Analyze Document</button>
+                <button class="btn btn-secondary" id="sampleBtn">Try Sample</button>
+            </div>
+        </div>
+
+        <div class="loading" id="loadingSection" style="display: none;">
+            <div class="spinner"></div>
+            <p>Analyzing your document... Please wait.</p>
+        </div>
+
+        <div class="results-section" id="resultsSection">
+            <div class="result-tabs">
+                <button class="result-tab active" data-tab="summary">📋 Summary</button>
+                <button class="result-tab" data-tab="keypoints">🔑 Key Points</button>
+                <button class="result-tab" data-tab="wordhelper">📚 Word Helper</button>
+                <button class="result-tab" data-tab="qa">💬 Ask Questions</button>
+            </div>
+
+            <div class="result-content active" id="summary-content">
+                <div class="legend">
+                    <div class="legend-item">
+                        <div class="legend-box" style="background: rgba(239, 68, 68, 0.2);"></div>
+                        <span>Critical Info</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-box" style="background: rgba(34, 197, 94, 0.2);"></div>
+                        <span>Amounts</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-box" style="background: rgba(251, 146, 60, 0.2);"></div>
+                        <span>Dates</span>
+                    </div>
+                </div>
+                <div class="summary-text" id="summaryText"></div>
+            </div>
+
+            <div class="result-content" id="keypoints-content">
+                <ul class="key-points" id="keyPointsList"></ul>
+            </div>
+
+            <div class="result-content" id="wordhelper-content">
+                <div id="wordHelperList"></div>
+            </div>
+
+            <div class="result-content" id="qa-content">
+                <div class="qa-section">
+                    <div class="qa-input">
+                        <input type="text" id="questionInput" placeholder="Ask a question about your document...">
+                        <button class="btn" id="askBtn">Ask</button>
+                    </div>
+                    <div id="qaAnswers"></div>
+                </div>
+            </div>
+
+            <div style="text-align: center; margin-top: 2rem;">
+                <button class="btn" id="newAnalysisBtn">Analyze Another Document</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = CONFIG.API_URL;
+        let currentResults = null;
+        let currentInputMode = 'text';
+        let selectedFiles = [];
+
+        // Tab switching for input
+        document.querySelectorAll('.input-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.input-tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.input-content').forEach(c => c.classList.remove('active'));
+                tab.classList.add('active');
+                currentInputMode = tab.dataset.tab;
+                document.getElementById(`${currentInputMode}-input`).classList.add('active');
+            });
+        });
+
+        // Tab switching for results
+        document.querySelectorAll('.result-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.result-tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.result-content').forEach(c => c.classList.remove('active'));
+                tab.classList.add('active');
+                document.getElementById(`${tab.dataset.tab}-content`).classList.add('active');
+            });
+        });
+
+        // File upload handling
+        document.getElementById('fileUpload').addEventListener('change', (e) => {
+            selectedFiles = Array.from(e.target.files);
+            const fileList = document.getElementById('fileList');
+            if (selectedFiles.length > 0) {
+                fileList.textContent = `${selectedFiles.length} file(s) selected: ${selectedFiles.map(f => f.name).join(', ')}`;
+            } else {
+                fileList.textContent = '';
+            }
+        });
+
+        // Analyze button
+        document.getElementById('analyzeBtn').addEventListener('click', analyzeDocument);
+
+        // Sample button
+        document.getElementById('sampleBtn').addEventListener('click', () => {
+            const sampleText = "This is a 12-month residential lease agreement. [CRITICAL: No pets are allowed without prior written consent.] The monthly rent is [AMOUNT: ₹20,000], due on the [DATE: 1st of each month]. A security deposit of [AMOUNT: ₹40,000] is required upon signing.";
+            document.getElementById('textContent').value = sampleText;
+            currentInputMode = 'text';
+            document.querySelectorAll('.input-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.input-content').forEach(c => c.classList.remove('active'));
+            document.querySelector('.input-tab[data-tab="text"]').classList.add('active');
+            document.getElementById('text-input').classList.add('active');
+        });
+
+        // New analysis button
+        document.getElementById('newAnalysisBtn').addEventListener('click', () => {
+            document.getElementById('resultsSection').classList.remove('active');
+            document.getElementById('textContent').value = '';
+            selectedFiles = [];
+            document.getElementById('fileList').textContent = '';
+            document.getElementById('linkUrl').value = '';
+        });
+
+        // Ask question button
+        document.getElementById('askBtn').addEventListener('click', askQuestion);
+
+        async function analyzeDocument() {
+            let content = '';
+            
+            if (currentInputMode === 'text') {
+                content = document.getElementById('textContent').value.trim();
+                if (!content) {
+                    alert('Please enter some text to analyze');
+                    return;
+                }
+            } else if (currentInputMode === 'file') {
+                if (selectedFiles.length === 0) {
+                    alert('Please select at least one file');
+                    return;
+                }
+                // For now, read text files only
+                try {
+                    const fileContents = await Promise.all(
+                        selectedFiles.map(file => readFileAsText(file))
+                    );
+                    content = fileContents.join('\n\n--- END OF FILE ---\n\n');
+                } catch (error) {
+                    alert('Error reading files. Please try again.');
+                    return;
+                }
+            } else if (currentInputMode === 'link') {
+                content = document.getElementById('linkUrl').value.trim();
+                if (!content) {
+                    alert('Please enter a URL');
+                    return;
+                }
+            }
+
+            // Show loading
+            document.getElementById('loadingSection').style.display = 'block';
+            document.getElementById('resultsSection').classList.remove('active');
+
+            try {
+                // Call backend API
+                const response = await fetch(`${API_URL}/analyze-legal-document`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ content })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Analysis failed');
+                }
+
+                const data = await response.json();
+                currentResults = data;
+                displayResults(data);
+
+                document.getElementById('loadingSection').style.display = 'none';
+                document.getElementById('resultsSection').classList.add('active');
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('loadingSection').style.display = 'none';
+                alert('Failed to analyze document. Please try again.');
+            }
+        }
+
+        function displayResults(data) {
+            // Display summary with color coding
+            const summaryText = data.summary || data.colorCodedOriginalText || '';
+            document.getElementById('summaryText').innerHTML = formatColorCodedText(summaryText);
+
+            // Display key points
+            const keyPointsList = document.getElementById('keyPointsList');
+            keyPointsList.innerHTML = '';
+            (data.keyPoints || []).forEach(point => {
+                const li = document.createElement('li');
+                li.textContent = point;
+                keyPointsList.appendChild(li);
+            });
+
+            // Display word helper
+            const wordHelperList = document.getElementById('wordHelperList');
+            wordHelperList.innerHTML = '';
+            (data.wordHelper || []).forEach(word => {
+                const div = document.createElement('div');
+                div.className = 'word-helper-item';
+                div.innerHTML = `
+                    <h3>${word.term}</h3>
+                    <p><strong>Simple:</strong> ${word.simpleDefinition}</p>
+                    <p><strong>Detailed:</strong> ${word.detailedDefinition}</p>
+                `;
+                wordHelperList.appendChild(div);
+            });
+
+            // Clear previous Q&A
+            document.getElementById('qaAnswers').innerHTML = '';
+        }
+
+        function formatColorCodedText(text) {
+            return text
+                .replace(/\[CRITICAL:(.*?)\]/g, '<span class="critical">$1</span>')
+                .replace(/\[AMOUNT:(.*?)\]/g, '<span class="amount">$1</span>')
+                .replace(/\[DATE:(.*?)\]/g, '<span class="date">$1</span>');
+        }
+
+        async function askQuestion() {
+            const question = document.getElementById('questionInput').value.trim();
+            if (!question || !currentResults) return;
+
+            try {
+                const response = await fetch(`${API_URL}/ask-question-legal`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        question,
+                        originalText: currentResults.originalText || currentResults.summary
+                    })
+                });
+
+                if (!response.ok) throw new Error('Failed to get answer');
+
+                const data = await response.json();
+                
+                const answerDiv = document.createElement('div');
+                answerDiv.className = 'qa-answer';
+                answerDiv.innerHTML = `
+                    <strong>Q:</strong> ${question}<br>
+                    <strong>A:</strong> ${data.answer}
+                `;
+                document.getElementById('qaAnswers').prepend(answerDiv);
+                document.getElementById('questionInput').value = '';
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Failed to get answer. Please try again.');
+            }
+        }
+
+        function readFileAsText(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = reject;
+                reader.readAsText(file);
+            });
+        }
+    </script>
+</body>
+</html>

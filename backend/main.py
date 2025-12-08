@@ -12,6 +12,7 @@ from evidence_service import EvidenceManager
 from meeting_service import MeetingManager
 from criminal_records_service import criminal_records_manager
 from report_service import report_generator
+from legal_document_analyzer import legal_document_analyzer
 
 app = FastAPI()
 
@@ -859,6 +860,164 @@ async def chat(data: dict):
         return JSONResponse(
             status_code=500,
             content={"error": f"Chat failed: {str(e)}"}
+        )
+
+
+# ==================== Legal Document Analyzer Endpoints ====================
+
+@app.post("/analyze-legal-document")
+async def analyze_legal_document(data: dict):
+    """
+    Analyze a legal document and provide simplified summary
+    
+    Request body:
+    {
+        "content": "Document text to analyze"
+    }
+    
+    Returns:
+    {
+        "summary": "Color-coded summary",
+        "keyPoints": [...],
+        "wordHelper": [...],
+        "verifiableClaims": [...],
+        "originalText": "..."
+    }
+    """
+    try:
+        content = data.get("content", "").strip()
+        
+        if not content:
+            return JSONResponse(
+                status_code=400,
+                content={"error": "No content provided"}
+            )
+        
+        # Analyze the document
+        result = legal_document_analyzer.analyze_document(content)
+        
+        return JSONResponse(content=result)
+        
+    except Exception as e:
+        print(f"Error in analyze_legal_document: {str(e)}")
+        return JSONResponse(
+            status_code=500,
+            content={"error": f"Analysis failed: {str(e)}"}
+        )
+
+
+@app.post("/ask-question-legal")
+async def ask_question_legal(data: dict):
+    """
+    Answer a question about an analyzed legal document
+    
+    Request body:
+    {
+        "question": "User's question",
+        "originalText": "Original document text"
+    }
+    
+    Returns:
+    {
+        "answer": "AI's answer",
+        "suggestions": ["Follow-up question 1", ...]
+    }
+    """
+    try:
+        question = data.get("question", "").strip()
+        original_text = data.get("originalText", "").strip()
+        
+        if not question or not original_text:
+            return JSONResponse(
+                status_code=400,
+                content={"error": "Question and original text are required"}
+            )
+        
+        # Get answer
+        result = legal_document_analyzer.answer_question(question, original_text)
+        
+        return JSONResponse(content=result)
+        
+    except Exception as e:
+        print(f"Error in ask_question_legal: {str(e)}")
+        return JSONResponse(
+            status_code=500,
+            content={"error": f"Failed to answer question: {str(e)}"}
+        )
+
+
+# ==================== Reviews Endpoints ====================
+
+@app.post("/submit-review")
+async def submit_review(data: dict):
+    """
+    Submit a user review
+    
+    Request body:
+    {
+        "name": "User name",
+        "role": "Judge/Lawyer/etc",
+        "rating": 5,
+        "review": "Review text"
+    }
+    """
+    try:
+        import json
+        from datetime import datetime
+        
+        # Load existing reviews
+        try:
+            with open('reviews.json', 'r', encoding='utf-8') as f:
+                reviews = json.load(f)
+        except FileNotFoundError:
+            reviews = []
+        
+        # Add new review
+        new_review = {
+            "id": len(reviews) + 1,
+            "name": data.get("name", "Anonymous"),
+            "role": data.get("role", "User"),
+            "rating": data.get("rating", 5),
+            "review": data.get("review", ""),
+            "date": datetime.now().strftime("%Y-%m-%d")
+        }
+        
+        reviews.append(new_review)
+        
+        # Save reviews
+        with open('reviews.json', 'w', encoding='utf-8') as f:
+            json.dump(reviews, f, indent=2, ensure_ascii=False)
+        
+        return JSONResponse(content={"success": True, "message": "Review submitted successfully"})
+        
+    except Exception as e:
+        print(f"Error submitting review: {str(e)}")
+        return JSONResponse(
+            status_code=500,
+            content={"error": f"Failed to submit review: {str(e)}"}
+        )
+
+
+@app.get("/get-reviews")
+async def get_reviews():
+    """Get all reviews"""
+    try:
+        import json
+        
+        try:
+            with open('reviews.json', 'r', encoding='utf-8') as f:
+                reviews = json.load(f)
+        except FileNotFoundError:
+            reviews = []
+        
+        # Return latest 10 reviews
+        return JSONResponse(content={"reviews": reviews[-10:][::-1]})
+        
+    except Exception as e:
+        print(f"Error getting reviews: {str(e)}")
+        return JSONResponse(
+            status_code=500,
+            content={"error": f"Failed to get reviews: {str(e)}"}
         )
 
 
