@@ -1,10 +1,11 @@
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect, UploadFile, File
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, UploadFile, File, Header, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, JSONResponse, StreamingResponse
 import json
 import asyncio
+import hashlib
 from datetime import datetime
-from typing import List, Dict
+from typing import List, Dict, Optional
 from io import BytesIO
 from deepgram_service import DeepgramTranscriber
 from llm_service import GroqLLMService
@@ -13,6 +14,7 @@ from meeting_service import MeetingManager
 from criminal_records_service import criminal_records_manager
 from report_service import report_generator
 from legal_document_analyzer import legal_document_analyzer
+from auth_service import auth_service
 
 app = FastAPI()
 
@@ -946,6 +948,46 @@ async def ask_question_legal(data: dict):
         )
 
 
+@app.post("/ask-question")
+async def ask_question(data: dict):
+    """
+    Answer a question about an analyzed legal document (alias for /ask-question-legal)
+    
+    Request body:
+    {
+        "question": "User's question",
+        "document_text": "Original document text"
+    }
+    
+    Returns:
+    {
+        "answer": "AI's answer",
+        "suggestions": ["Follow-up question 1", ...]
+    }
+    """
+    try:
+        question = data.get("question", "").strip()
+        document_text = data.get("document_text", "").strip()
+        
+        if not question or not document_text:
+            return JSONResponse(
+                status_code=400,
+                content={"error": "Question and document_text are required"}
+            )
+        
+        # Get answer using the legal document analyzer
+        result = legal_document_analyzer.answer_question(question, document_text)
+        
+        return JSONResponse(content=result)
+        
+    except Exception as e:
+        print(f"Error in ask_question: {str(e)}")
+        return JSONResponse(
+            status_code=500,
+            content={"error": f"Failed to answer question: {str(e)}"}
+        )
+
+
 # ==================== Reviews Endpoints ====================
 
 @app.post("/submit-review")
@@ -1018,6 +1060,387 @@ async def get_reviews():
         return JSONResponse(
             status_code=500,
             content={"error": f"Failed to get reviews: {str(e)}"}
+        )
+
+
+# Authentication Endpoints
+@app.post("/api/auth/signup")
+async def signup(data: dict):
+    """Register a new user"""
+    try:
+        email = data.get("email", "").strip()
+        password = data.get("password", "")
+        name = data.get("name", "").strip()
+        role = data.get("role", "User")
+        
+        result = auth_service.signup(email, password, name, role)
+        
+        if result["success"]:
+            return JSONResponse(content=result)
+        else:
+            return JSONResponse(status_code=400, content=result)
+            
+    except Exception as e:
+        print(f"Error in signup: {str(e)}")
+        return JSONResponse(
+            status_code=500,
+            content={"success": False, "error": f"Signup failed: {str(e)}"}
+        )
+
+
+@app.post("/api/auth/login")
+async def login(data: dict):
+    """Authenticate user and create session"""
+    try:
+        email = data.get("email", "").strip()
+        password = data.get("password", "")
+        
+        result = auth_service.login(email, password)
+        
+        if result["success"]:
+            return JSONResponse(content=result)
+        else:
+            return JSONResponse(status_code=401, content=result)
+            
+    except Exception as e:
+        print(f"Error in login: {str(e)}")
+        return JSONResponse(
+            status_code=500,
+            content={"success": False, "error": f"Login failed: {str(e)}"}
+        )
+
+
+@app.post("/api/auth/logout")
+async def logout(authorization: Optional[str] = Header(None)):
+    """Logout user and invalidate session"""
+    try:
+        if not authorization or not authorization.startswith("Bearer "):
+            return JSONResponse(
+                status_code=401,
+                content={"success": False, "error": "No token provided"}
+            )
+        
+        token = authorization.replace("Bearer ", "")
+        auth_service.logout(token)
+        
+        return JSONResponse(content={"success": True, "message": "Logged out successfully"})
+        
+    except Exception as e:
+        print(f"Error in logout: {str(e)}")
+        return JSONResponse(
+            status_code=500,
+            content={"success": False, "error": f"Logout failed: {str(e)}"}
+        )
+
+
+@app.get("/api/auth/verify")
+async def verify_token(authorization: Optional[str] = Header(None)):
+    """Verify authentication token"""
+    try:
+        if not authorization or not authorization.startswith("Bearer "):
+            return JSONResponse(
+                status_code=401,
+                content={"success": False, "error": "No token provided"}
+            )
+        
+        token = authorization.replace("Bearer ", "")
+        user = auth_service.verify_token(token)
+        
+        if user:
+            return JSONResponse(content={"success": True, "user": user})
+        else:
+            return JSONResponse(
+                status_code=401,
+                content={"success": False, "error": "Invalid or expired token"}
+            )
+            
+    except Exception as e:
+        print(f"Error in verify_token: {str(e)}")
+        return JSONResponse(
+            status_code=500,
+            content={"success": False, "error": f"Verification failed: {str(e)}"}
+        )
+
+
+# User Dashboard Endpoints
+@app.get("/api/user/{user_id}/activity")
+async def get_user_activity(user_id: int, authorization: Optional[str] = Header(None)):
+    """Get user's recent activity"""
+    try:
+        # Verify token
+        if not authorization or not authorization.startswith("Bearer "):
+            return JSONResponse(
+                status_code=401,
+                content={"success": False, "error": "No token provided"}
+            )
+        
+        token = authorization.replace("Bearer ", "")
+        user = auth_service.verify_token(token)
+        
+        if not user or user['user_id'] != user_id:
+            return JSONResponse(
+                status_code=403,
+                content={"success": False, "error": "Access denied"}
+            )
+        
+        # For now, return empty activity (will be populated as features are used)
+        activity = []
+        stats = {
+            "totalMeetings": 0,
+            "documentsAnalyzed": 0
+        }
+        
+        return JSONResponse(content={
+            "success": True,
+            "activity": activity,
+            "stats": stats
+        })
+        
+    except Exception as e:
+        print(f"Error getting user activity: {str(e)}")
+        return JSONResponse(
+            status_code=500,
+            content={"success": False, "error": str(e)}
+        )
+
+
+@app.get("/api/user/{user_id}/meetings")
+async def get_user_meetings(user_id: int, authorization: Optional[str] = Header(None)):
+    """Get user's meeting history"""
+    try:
+        # Verify token
+        if not authorization or not authorization.startswith("Bearer "):
+            return JSONResponse(
+                status_code=401,
+                content={"success": False, "error": "No token provided"}
+            )
+        
+        token = authorization.replace("Bearer ", "")
+        user = auth_service.verify_token(token)
+        
+        if not user or user['user_id'] != user_id:
+            return JSONResponse(
+                status_code=403,
+                content={"success": False, "error": "Access denied"}
+            )
+        
+        # For now, return empty meetings (will be populated as meetings are created)
+        meetings = []
+        
+        return JSONResponse(content={
+            "success": True,
+            "meetings": meetings
+        })
+        
+    except Exception as e:
+        print(f"Error getting user meetings: {str(e)}")
+        return JSONResponse(
+            status_code=500,
+            content={"success": False, "error": str(e)}
+        )
+
+
+@app.get("/api/user/{user_id}/stats")
+async def get_user_stats(user_id: int, authorization: Optional[str] = Header(None)):
+    """Get user's dashboard statistics"""
+    try:
+        # Verify token
+        if not authorization or not authorization.startswith("Bearer "):
+            return JSONResponse(
+                status_code=401,
+                content={"success": False, "error": "No token provided"}
+            )
+        
+        token = authorization.replace("Bearer ", "")
+        user = auth_service.verify_token(token)
+        
+        if not user or user['user_id'] != user_id:
+            return JSONResponse(
+                status_code=403,
+                content={"success": False, "error": "Access denied"}
+            )
+        
+        # Load data from JSON files
+        try:
+            with open('user_meetings.json', 'r') as f:
+                meetings_data = json.load(f)
+            with open('user_documents.json', 'r') as f:
+                documents_data = json.load(f)
+            with open('user_activity.json', 'r') as f:
+                activity_data = json.load(f)
+        except FileNotFoundError:
+            meetings_data = []
+            documents_data = []
+            activity_data = []
+        
+        # Calculate stats for this user
+        user_meetings = [m for m in meetings_data if m.get('user_id') == user_id]
+        user_documents = [d for d in documents_data if d.get('user_id') == user_id]
+        
+        # Calculate total hours (sum of meeting durations)
+        total_hours = 0
+        for meeting in user_meetings:
+            duration_str = meeting.get('duration', '')
+            if 'hour' in duration_str.lower():
+                hours = int(''.join(filter(str.isdigit, duration_str.split('hour')[0])))
+                total_hours += hours
+            elif 'minute' in duration_str.lower():
+                minutes = int(''.join(filter(str.isdigit, duration_str.split('minute')[0])))
+                total_hours += minutes / 60
+        
+        stats = {
+            "totalMeetings": len(user_meetings),
+            "documentsAnalyzed": len(user_documents),
+            "totalHours": round(total_hours, 1)
+        }
+        
+        return JSONResponse(content={
+            "success": True,
+            "stats": stats
+        })
+        
+    except Exception as e:
+        print(f"Error getting user stats: {str(e)}")
+        return JSONResponse(
+            status_code=500,
+            content={"success": False, "error": str(e)}
+        )
+
+
+@app.put("/api/user/{user_id}/profile")
+async def update_user_profile(user_id: int, request: Request, authorization: Optional[str] = Header(None)):
+    """Update user profile information"""
+    try:
+        # Verify token
+        if not authorization or not authorization.startswith("Bearer "):
+            return JSONResponse(
+                status_code=401,
+                content={"success": False, "error": "No token provided"}
+            )
+        
+        token = authorization.replace("Bearer ", "")
+        user = auth_service.verify_token(token)
+        
+        if not user or user['user_id'] != user_id:
+            return JSONResponse(
+                status_code=403,
+                content={"success": False, "error": "Access denied"}
+            )
+        
+        # Get update data
+        data = await request.json()
+        
+        # Load users
+        with open('users.json', 'r') as f:
+            users = json.load(f)
+        
+        # Find and update user
+        user_found = False
+        for u in users:
+            if u['id'] == user_id:
+                u['name'] = data.get('name', u.get('name'))
+                u['role'] = data.get('role', u.get('role'))
+                u['phone'] = data.get('phone', u.get('phone', ''))
+                u['organization'] = data.get('organization', u.get('organization', ''))
+                u['bio'] = data.get('bio', u.get('bio', ''))
+                user_found = True
+                break
+        
+        if not user_found:
+            return JSONResponse(
+                status_code=404,
+                content={"success": False, "error": "User not found"}
+            )
+        
+        # Save updated users
+        with open('users.json', 'w') as f:
+            json.dump(users, f, indent=2)
+        
+        return JSONResponse(content={
+            "success": True,
+            "message": "Profile updated successfully"
+        })
+        
+    except Exception as e:
+        print(f"Error updating profile: {str(e)}")
+        return JSONResponse(
+            status_code=500,
+            content={"success": False, "error": str(e)}
+        )
+
+
+@app.put("/api/user/{user_id}/password")
+async def update_user_password(user_id: int, request: Request, authorization: Optional[str] = Header(None)):
+    """Update user password"""
+    try:
+        # Verify token
+        if not authorization or not authorization.startswith("Bearer "):
+            return JSONResponse(
+                status_code=401,
+                content={"success": False, "error": "No token provided"}
+            )
+        
+        token = authorization.replace("Bearer ", "")
+        user = auth_service.verify_token(token)
+        
+        if not user or user['user_id'] != user_id:
+            return JSONResponse(
+                status_code=403,
+                content={"success": False, "error": "Access denied"}
+            )
+        
+        # Get password data
+        data = await request.json()
+        current_password = data.get('currentPassword')
+        new_password = data.get('newPassword')
+        
+        if not current_password or not new_password:
+            return JSONResponse(
+                status_code=400,
+                content={"success": False, "error": "Current and new password required"}
+            )
+        
+        # Load users
+        with open('users.json', 'r') as f:
+            users = json.load(f)
+        
+        # Find user and verify current password
+        user_found = False
+        for u in users:
+            if u['id'] == user_id:
+                current_hash = hashlib.sha256(current_password.encode()).hexdigest()
+                if u['password'] != current_hash:
+                    return JSONResponse(
+                        status_code=400,
+                        content={"success": False, "error": "Current password is incorrect"}
+                    )
+                
+                # Update password
+                new_hash = hashlib.sha256(new_password.encode()).hexdigest()
+                u['password'] = new_hash
+                user_found = True
+                break
+        
+        if not user_found:
+            return JSONResponse(
+                status_code=404,
+                content={"success": False, "error": "User not found"}
+            )
+        
+        # Save updated users
+        with open('users.json', 'w') as f:
+            json.dump(users, f, indent=2)
+        
+        return JSONResponse(content={
+            "success": True,
+            "message": "Password updated successfully"
+        })
+        
+    except Exception as e:
+        print(f"Error updating password: {str(e)}")
+        return JSONResponse(
+            status_code=500,
+            content={"success": False, "error": str(e)}
         )
 
 

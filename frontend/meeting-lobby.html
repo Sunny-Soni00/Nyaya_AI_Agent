@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nyaya-Sahayak | Join Meeting</title>
+    <title>Meetings - Nyaya-Sahayak</title>
     <script src="config.js"></script>
     <style>
         * {
@@ -16,89 +16,282 @@
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Sidebar Navigation */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            height: 100vh;
+            width: 280px;
+            background: rgba(255, 255, 255, 0.98);
+            box-shadow: 4px 0 20px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar.collapsed {
+            width: 80px;
+        }
+
+        .sidebar-header {
+            padding: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .logo-icon {
+            font-size: 2rem;
+        }
+
+        .logo-text {
+            font-size: 1.3rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            white-space: nowrap;
+            transition: opacity 0.3s;
+        }
+
+        .sidebar.collapsed .logo-text {
+            opacity: 0;
+            width: 0;
+        }
+
+        .toggle-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #667eea;
+            transition: transform 0.3s;
+        }
+
+        .toggle-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .sidebar-nav {
+            flex: 1;
+            padding: 1rem 0;
+            overflow-y: auto;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem 1.5rem;
+            color: #555;
+            text-decoration: none;
+            transition: all 0.3s;
+            cursor: pointer;
+            border-left: 4px solid transparent;
+        }
+
+        .nav-item:hover {
+            background: rgba(102, 126, 234, 0.1);
+            color: #667eea;
+            border-left-color: #667eea;
+        }
+
+        .nav-item.active {
+            background: linear-gradient(90deg, rgba(102, 126, 234, 0.15) 0%, transparent 100%);
+            color: #667eea;
+            border-left-color: #667eea;
+            font-weight: 600;
+        }
+
+        .nav-icon {
+            font-size: 1.5rem;
+            min-width: 24px;
+            text-align: center;
+        }
+
+        .nav-text {
+            white-space: nowrap;
+            transition: opacity 0.3s;
+        }
+
+        .sidebar.collapsed .nav-text {
+            opacity: 0;
+            width: 0;
+        }
+
+        .sidebar-footer {
+            padding: 1rem 1.5rem;
+            border-top: 2px solid #f0f0f0;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 12px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .user-profile:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.3);
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 20px;
+            font-weight: 700;
+            font-size: 1.2rem;
+            flex-shrink: 0;
         }
 
-        .login-container {
+        .user-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .user-name {
+            font-weight: 600;
+            font-size: 0.95rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .user-role {
+            font-size: 0.8rem;
+            opacity: 0.9;
+        }
+
+        .sidebar.collapsed .user-info {
+            display: none;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: 280px;
+            min-height: 100vh;
+            padding: 2rem;
+            transition: margin-left 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .sidebar.collapsed + .main-content {
+            margin-left: 80px;
+        }
+
+        /* Meeting Container */
+        .meeting-container {
             background: white;
             border-radius: 20px;
-            padding: 50px;
-            max-width: 500px;
+            padding: 3rem;
+            max-width: 600px;
             width: 100%;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
         }
 
-        .logo {
+        .container-header {
             text-align: center;
-            font-size: 48px;
-            margin-bottom: 10px;
+            margin-bottom: 2rem;
         }
 
-        .title {
-            text-align: center;
-            font-size: 32px;
+        .container-header .logo {
+            font-size: 4rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .container-header h1 {
+            font-size: 2rem;
             font-weight: 700;
-            color: #2c3e50;
-            margin-bottom: 10px;
+            color: #333;
+            margin-bottom: 0.5rem;
         }
 
-        .subtitle {
-            text-align: center;
-            color: #7f8c8d;
-            font-size: 16px;
-            margin-bottom: 40px;
+        .container-header p {
+            color: #666;
+            font-size: 1rem;
         }
 
+        /* Form Styles */
         .form-group {
-            margin-bottom: 25px;
+            margin-bottom: 1.5rem;
         }
 
-        .form-group label {
+        .form-label {
             display: block;
             font-weight: 600;
-            color: #2c3e50;
-            margin-bottom: 8px;
-            font-size: 14px;
+            color: #333;
+            margin-bottom: 0.5rem;
+            font-size: 0.95rem;
         }
 
-        .form-group input {
+        .form-input, .form-select {
             width: 100%;
-            padding: 15px;
+            padding: 0.9rem;
             border: 2px solid #e0e0e0;
             border-radius: 10px;
-            font-size: 16px;
+            font-size: 1rem;
             transition: all 0.3s;
+            font-family: inherit;
         }
 
-        .form-group input:focus {
+        .form-input:focus, .form-select:focus {
             outline: none;
             border-color: #667eea;
             box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
         }
 
+        .form-select {
+            background: white;
+            cursor: pointer;
+        }
+
+        /* Buttons */
         .btn {
             width: 100%;
-            padding: 15px;
+            padding: 1rem;
             border: none;
             border-radius: 10px;
-            font-size: 16px;
+            font-size: 1rem;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s;
-            margin-bottom: 15px;
+            margin-bottom: 1rem;
         }
 
         .btn-primary {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
         }
 
         .btn-primary:hover {
             transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
         }
 
         .btn-secondary {
@@ -108,12 +301,13 @@
         }
 
         .btn-secondary:hover {
-            background: #f8f9fa;
+            background: rgba(102, 126, 234, 0.1);
         }
 
+        /* Divider */
         .divider {
             text-align: center;
-            margin: 30px 0;
+            margin: 1.5rem 0;
             position: relative;
         }
 
@@ -129,32 +323,35 @@
 
         .divider span {
             background: white;
-            padding: 0 15px;
+            padding: 0 1rem;
             position: relative;
-            color: #7f8c8d;
-            font-size: 14px;
+            color: #999;
+            font-size: 0.9rem;
+            font-weight: 600;
         }
 
+        /* Status Message */
         .status-message {
-            padding: 12px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            font-size: 14px;
+            padding: 1rem;
+            border-radius: 10px;
+            margin-bottom: 1.5rem;
+            font-size: 0.95rem;
             display: none;
         }
 
         .status-message.error {
             background: #fee;
             color: #c33;
-            border: 1px solid #fcc;
+            border-left: 4px solid #f44336;
         }
 
         .status-message.success {
             background: #efe;
             color: #3c3;
-            border: 1px solid #cfc;
+            border-left: 4px solid #4caf50;
         }
 
+        /* Section Toggle */
         .join-section {
             display: none;
         }
@@ -165,119 +362,321 @@
 
         .back-link {
             text-align: center;
-            margin-top: 15px;
+            margin-top: 1rem;
         }
 
         .back-link a {
             color: #667eea;
             text-decoration: none;
-            font-size: 14px;
+            font-weight: 600;
             cursor: pointer;
+            font-size: 0.95rem;
         }
 
         .back-link a:hover {
             text-decoration: underline;
         }
 
-        .old-version-link {
+        .standalone-link {
             text-align: center;
-            margin-top: 20px;
-            padding-top: 20px;
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
             border-top: 1px solid #e0e0e0;
         }
 
-        .old-version-link a {
-            color: #7f8c8d;
+        .standalone-link a {
+            color: #999;
             text-decoration: none;
-            font-size: 13px;
+            font-size: 0.9rem;
         }
 
-        .old-version-link a:hover {
+        .standalone-link a:hover {
             color: #667eea;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .sidebar.mobile-open {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+                padding: 1rem;
+            }
+
+            .meeting-container {
+                padding: 2rem 1.5rem;
+            }
+
+            .mobile-overlay {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0,0,0,0.5);
+                z-index: 999;
+            }
+
+            .mobile-overlay.active {
+                display: block;
+            }
+
+            .mobile-menu-btn {
+                display: block !important;
+            }
+        }
+
+        .mobile-overlay {
+            display: none;
+        }
+
+        .mobile-menu-btn {
+            display: none;
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            z-index: 998;
         }
     </style>
 </head>
 <body>
-    <div class="login-container">
-        <div class="logo">⚖️</div>
-        <div class="title">Nyaya-Sahayak</div>
-        <div class="subtitle">AI-Powered Courtroom Assistant</div>
+    <!-- Mobile Overlay -->
+    <div class="mobile-overlay" id="mobileOverlay" onclick="toggleSidebar()"></div>
 
-        <div id="statusMessage" class="status-message"></div>
+    <!-- Mobile Menu Button -->
+    <button class="mobile-menu-btn" onclick="toggleSidebar()">☰</button>
 
-        <!-- Main Section (Create/Join) -->
-        <div id="mainSection">
-            <div class="form-group">
-                <label for="userName">Your Name</label>
-                <input type="text" id="userName" placeholder="Enter your full name" required>
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="logo-section">
+                <div class="logo-icon">⚖️</div>
+                <div class="logo-text">Nyaya-Sahayak</div>
             </div>
-
-            <div class="form-group">
-                <label for="userRole">Your Role</label>
-                <select id="userRole" style="width: 100%; padding: 15px; border: 2px solid #e0e0e0; border-radius: 10px; font-size: 16px; background: white; cursor: pointer;">
-                    <option value="Judge">⚖️ Judge</option>
-                    <option value="Lawyer">👔 Lawyer</option>
-                    <option value="Witness">🗣️ Witness</option>
-                    <option value="Defendant">👤 Defendant</option>
-                    <option value="Prosecutor">⚔️ Prosecutor</option>
-                    <option value="Observer">👁️ Observer</option>
-                </select>
-            </div>
-
-            <button class="btn btn-primary" onclick="createMeeting()">
-                🎯 Create New Meeting
-            </button>
-
-            <div class="divider">
-                <span>OR</span>
-            </div>
-
-            <button class="btn btn-secondary" onclick="showJoinSection()">
-                👥 Join Existing Meeting
-            </button>
-
-            <div class="old-version-link">
-                <a href="standalone.html">Use standalone version (no meeting)</a>
-            </div>
+            <button class="toggle-btn" onclick="toggleSidebar()">☰</button>
         </div>
 
-        <!-- Join Section -->
-        <div id="joinSection" class="join-section">
-            <div class="form-group">
-                <label for="joinName">Your Name</label>
-                <input type="text" id="joinName" placeholder="Enter your full name" required>
-            </div>
+        <nav class="sidebar-nav">
+            <a href="dashboard.html" class="nav-item">
+                <span class="nav-icon">📊</span>
+                <span class="nav-text">Dashboard</span>
+            </a>
+            <a href="meeting-lobby.html" class="nav-item active">
+                <span class="nav-icon">🎥</span>
+                <span class="nav-text">Meetings</span>
+            </a>
+            <a href="documents.html" class="nav-item">
+                <span class="nav-icon">📄</span>
+                <span class="nav-text">Documents</span>
+            </a>
+            <a href="profile.html" class="nav-item">
+                <span class="nav-icon">👤</span>
+                <span class="nav-text">Profile</span>
+            </a>
+            <a href="settings.html" class="nav-item">
+                <span class="nav-icon">⚙️</span>
+                <span class="nav-text">Settings</span>
+            </a>
+            <a href="#" onclick="handleLogout(); return false;" class="nav-item">
+                <span class="nav-icon">🚪</span>
+                <span class="nav-text">Logout</span>
+            </a>
+        </nav>
 
-            <div class="form-group">
-                <label for="joinRole">Your Role</label>
-                <select id="joinRole" style="width: 100%; padding: 15px; border: 2px solid #e0e0e0; border-radius: 10px; font-size: 16px; background: white; cursor: pointer;">
-                    <option value="Judge">⚖️ Judge</option>
-                    <option value="Lawyer">👔 Lawyer</option>
-                    <option value="Witness">🗣️ Witness</option>
-                    <option value="Defendant">👤 Defendant</option>
-                    <option value="Prosecutor">⚔️ Prosecutor</option>
-                    <option value="Observer">👁️ Observer</option>
-                </select>
-            </div>
-
-            <div class="form-group">
-                <label for="meetingId">Meeting ID</label>
-                <input type="text" id="meetingId" placeholder="Enter 6-digit meeting code" 
-                       maxlength="6" style="text-transform: uppercase;" required>
-            </div>
-
-            <button class="btn btn-primary" onclick="joinMeeting()">
-                Join Meeting
-            </button>
-
-            <div class="back-link">
-                <a onclick="showMainSection()">← Back to main menu</a>
+        <div class="sidebar-footer">
+            <div class="user-profile" onclick="window.location.href='profile.html'">
+                <div class="user-avatar" id="sidebarAvatar">U</div>
+                <div class="user-info">
+                    <div class="user-name" id="sidebarName">User Name</div>
+                    <div class="user-role" id="sidebarRole">Role</div>
+                </div>
             </div>
         </div>
-    </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="meeting-container">
+            <div class="container-header">
+                <div class="logo">⚖️</div>
+                <h1>Virtual Courtroom</h1>
+                <p>AI-Powered Meeting Platform</p>
+            </div>
+
+            <div id="statusMessage" class="status-message"></div>
+
+            <!-- Main Section (Create/Join) -->
+            <div id="mainSection">
+                <div class="form-group">
+                    <label class="form-label" for="userName">Your Name</label>
+                    <input type="text" id="userName" class="form-input" placeholder="Enter your full name" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="userRole">Your Role</label>
+                    <select id="userRole" class="form-select" onchange="handleCreateRoleChange()">
+                        <option value="Judge">⚖️ Judge</option>
+                        <option value="Lawyer">👔 Lawyer</option>
+                        <option value="Witness">🗣️ Witness</option>
+                        <option value="Defendant">👤 Defendant</option>
+                        <option value="Prosecutor">⚔️ Prosecutor</option>
+                        <option value="Observer">👁️ Observer</option>
+                        <option value="Other">✏️ Other</option>
+                    </select>
+                </div>
+
+                <div class="form-group" id="customCreateRoleGroup" style="display: none;">
+                    <label class="form-label" for="customCreateRole">Specify Your Role</label>
+                    <input type="text" id="customCreateRole" class="form-input" placeholder="Enter your role">
+                </div>
+
+                <button class="btn btn-primary" onclick="createMeeting()">
+                    🎯 Create New Meeting
+                </button>
+
+                <div class="divider">
+                    <span>OR</span>
+                </div>
+
+                <button class="btn btn-secondary" onclick="showJoinSection()">
+                    👥 Join Existing Meeting
+                </button>
+
+                <div class="standalone-link">
+                    <a href="standalone.html">Use standalone version (no meeting)</a>
+                </div>
+            </div>
+
+            <!-- Join Section -->
+            <div id="joinSection" class="join-section">
+                <div class="form-group">
+                    <label class="form-label" for="joinName">Your Name</label>
+                    <input type="text" id="joinName" class="form-input" placeholder="Enter your full name" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="joinRole">Your Role</label>
+                    <select id="joinRole" class="form-select" onchange="handleJoinRoleChange()">
+                        <option value="Judge">⚖️ Judge</option>
+                        <option value="Lawyer">👔 Lawyer</option>
+                        <option value="Witness">🗣️ Witness</option>
+                        <option value="Defendant">👤 Defendant</option>
+                        <option value="Prosecutor">⚔️ Prosecutor</option>
+                        <option value="Observer">👁️ Observer</option>
+                        <option value="Other">✏️ Other</option>
+                    </select>
+                </div>
+
+                <div class="form-group" id="customJoinRoleGroup" style="display: none;">
+                    <label class="form-label" for="customJoinRole">Specify Your Role</label>
+                    <input type="text" id="customJoinRole" class="form-input" placeholder="Enter your role">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="meetingId">Meeting ID</label>
+                    <input type="text" id="meetingId" class="form-input" placeholder="Enter 6-digit meeting code" 
+                           maxlength="6" style="text-transform: uppercase;" required>
+                </div>
+
+                <button class="btn btn-primary" onclick="joinMeeting()">
+                    Join Meeting
+                </button>
+
+                <div class="back-link">
+                    <a onclick="showMainSection()">← Back to main menu</a>
+                </div>
+            </div>
+        </div>
+    </main>
 
     <script>
         const API_URL = CONFIG.API_URL;
+
+        // Toggle Sidebar
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('mobileOverlay');
+            
+            if (window.innerWidth <= 768) {
+                sidebar.classList.toggle('mobile-open');
+                overlay.classList.toggle('active');
+            } else {
+                sidebar.classList.toggle('collapsed');
+            }
+        }
+
+        // Load user info from localStorage
+        function loadUserInfo() {
+            const userStr = localStorage.getItem('user');
+            if (userStr) {
+                const user = JSON.parse(userStr);
+                document.getElementById('sidebarName').textContent = user.name;
+                document.getElementById('sidebarRole').textContent = user.role;
+                document.getElementById('sidebarAvatar').textContent = user.name.charAt(0).toUpperCase();
+                
+                // Pre-fill name if available
+                document.getElementById('userName').value = user.name;
+            }
+        }
+
+        // Handle custom role input visibility for create section
+        function handleCreateRoleChange() {
+            const roleSelect = document.getElementById('userRole');
+            const customRoleGroup = document.getElementById('customCreateRoleGroup');
+            const customRoleInput = document.getElementById('customCreateRole');
+            
+            if (roleSelect.value === 'Other') {
+                customRoleGroup.style.display = 'block';
+                customRoleInput.required = true;
+            } else {
+                customRoleGroup.style.display = 'none';
+                customRoleInput.required = false;
+                customRoleInput.value = '';
+            }
+        }
+        
+        // Handle custom role input visibility for join section
+        function handleJoinRoleChange() {
+            const roleSelect = document.getElementById('joinRole');
+            const customRoleGroup = document.getElementById('customJoinRoleGroup');
+            const customRoleInput = document.getElementById('customJoinRole');
+            
+            if (roleSelect.value === 'Other') {
+                customRoleGroup.style.display = 'block';
+                customRoleInput.required = true;
+            } else {
+                customRoleGroup.style.display = 'none';
+                customRoleInput.required = false;
+                customRoleInput.value = '';
+            }
+        }
+        
+        // Get the actual role value (custom if Other is selected)
+        function getActualRole(roleSelectId, customRoleInputId) {
+            const roleSelect = document.getElementById(roleSelectId);
+            const customRoleInput = document.getElementById(customRoleInputId);
+            
+            if (roleSelect.value === 'Other' && customRoleInput.value.trim()) {
+                return customRoleInput.value.trim();
+            }
+            return roleSelect.value;
+        }
 
         function showMessage(message, type = 'error') {
             const statusEl = document.getElementById('statusMessage');
@@ -303,7 +702,7 @@
 
         async function createMeeting() {
             const name = document.getElementById('userName').value.trim();
-            const role = document.getElementById('userRole').value;
+            const role = getActualRole('userRole', 'customCreateRole');
             
             if (!name) {
                 showMessage('Please enter your name', 'error');
@@ -357,7 +756,7 @@
 
         async function joinMeeting() {
             const name = document.getElementById('joinName').value.trim();
-            const role = document.getElementById('joinRole').value;
+            const role = getActualRole('joinRole', 'customJoinRole');
             const meetingId = document.getElementById('meetingId').value.trim().toUpperCase();
             
             if (!name) {
@@ -419,6 +818,26 @@
             }
         }
 
+        // Logout
+        async function handleLogout() {
+            const token = localStorage.getItem('authToken');
+            
+            if (token) {
+                try {
+                    await fetch(`${API_URL}/api/auth/logout`, {
+                        method: 'POST',
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                } catch (error) {
+                    console.error('Logout error:', error);
+                }
+            }
+            
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('user');
+            window.location.href = 'login.html';
+        }
+
         // Enter key support
         document.getElementById('userName').addEventListener('keypress', (e) => {
             if (e.key === 'Enter') createMeeting();
@@ -435,6 +854,17 @@
         // Auto-uppercase meeting ID
         document.getElementById('meetingId').addEventListener('input', (e) => {
             e.target.value = e.target.value.toUpperCase();
+        });
+
+        // Load user info on page load
+        window.addEventListener('load', loadUserInfo);
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            if (window.innerWidth > 768) {
+                document.getElementById('mobileOverlay').classList.remove('active');
+                document.getElementById('sidebar').classList.remove('mobile-open');
+            }
         });
     </script>
 </body>

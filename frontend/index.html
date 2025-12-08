@@ -76,6 +76,59 @@
             box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
         }
 
+        .nav-btn.secondary {
+            background: white;
+            color: #667eea;
+            border: 2px solid #667eea;
+            box-shadow: none;
+        }
+
+        .nav-btn.secondary:hover {
+            background: #f8f9ff;
+        }
+
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #333;
+            font-weight: 600;
+        }
+
+        .user-avatar {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+        }
+
+        .logout-btn {
+            background: #f44336;
+            color: white;
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 20px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .logout-btn:hover {
+            background: #d32f2f;
+            transform: translateY(-2px);
+        }
+
         /* Hero Section */
         .hero {
             text-align: center;
@@ -482,11 +535,24 @@
     <!-- Navbar -->
     <nav class="navbar">
         <div class="navbar-brand">⚖️ Nyaya-Sahayak</div>
-        <div class="nav-links">
+        <div class="nav-links" id="navLinks">
             <a href="#features" class="nav-link">Features</a>
             <a href="#services" class="nav-link">Services</a>
             <a href="#reviews" class="nav-link">Reviews</a>
-            <a href="meeting-lobby.html" class="nav-btn">Get Started</a>
+            <!-- Auth buttons (hidden when logged in) -->
+            <div id="authButtons">
+                <a href="login.html" class="nav-btn secondary">Log In</a>
+                <a href="signup.html" class="nav-btn">Sign Up</a>
+            </div>
+            <!-- User menu (hidden when logged out) -->
+            <div id="userMenu" class="user-menu" style="display: none;">
+                <a href="dashboard.html" class="nav-link">Dashboard</a>
+                <div class="user-info">
+                    <div class="user-avatar" id="userAvatar"></div>
+                    <span id="userName"></span>
+                </div>
+                <button onclick="handleLogout()" class="logout-btn">Logout</button>
+            </div>
         </div>
     </nav>
 
@@ -698,6 +764,20 @@
     <script>
         const API_URL = CONFIG.API_URL;
 
+        // Redirect logged-in users to dashboard
+        function checkAuthAndRedirect() {
+            const token = localStorage.getItem('authToken');
+            const user = localStorage.getItem('user');
+            
+            if (token && user) {
+                // User is logged in, redirect to dashboard
+                window.location.href = 'dashboard.html';
+            }
+        }
+
+        // Check authentication immediately
+        checkAuthAndRedirect();
+
         // Load reviews on page load
         window.addEventListener('load', loadReviews);
 
@@ -790,6 +870,62 @@
             if (e.target.id === 'reviewModal') {
                 closeReviewModal();
             }
+        });
+
+        // Authentication UI Management
+        function updateAuthUI() {
+            const token = localStorage.getItem('authToken');
+            const userStr = localStorage.getItem('user');
+            
+            if (token && userStr) {
+                try {
+                    const user = JSON.parse(userStr);
+                    // Show user menu, hide auth buttons
+                    document.getElementById('authButtons').style.display = 'none';
+                    document.getElementById('userMenu').style.display = 'flex';
+                    document.getElementById('userName').textContent = user.name;
+                    document.getElementById('userAvatar').textContent = user.name.charAt(0).toUpperCase();
+                } catch (e) {
+                    console.error('Error parsing user data:', e);
+                    localStorage.removeItem('authToken');
+                    localStorage.removeItem('user');
+                }
+            } else {
+                // Show auth buttons, hide user menu
+                document.getElementById('authButtons').style.display = 'flex';
+                document.getElementById('userMenu').style.display = 'none';
+            }
+        }
+
+        async function handleLogout() {
+            const token = localStorage.getItem('authToken');
+            
+            if (token) {
+                try {
+                    await fetch(`${API_URL}/api/auth/logout`, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        }
+                    });
+                } catch (error) {
+                    console.error('Logout error:', error);
+                }
+            }
+            
+            // Clear local storage
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('user');
+            
+            // Update UI
+            updateAuthUI();
+            
+            alert('Logged out successfully!');
+        }
+
+        // Update auth UI on page load
+        window.addEventListener('load', () => {
+            updateAuthUI();
         });
     </script>
 </body>

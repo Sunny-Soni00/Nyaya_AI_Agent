@@ -1,0 +1,1133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Nyaya-Sahayak</title>
+    <script src="config.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Sidebar Navigation */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            height: 100vh;
+            width: 280px;
+            background: rgba(255, 255, 255, 0.98);
+            box-shadow: 4px 0 20px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar.collapsed {
+            width: 80px;
+        }
+
+        .sidebar-header {
+            padding: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .logo-icon {
+            font-size: 2rem;
+        }
+
+        .logo-text {
+            font-size: 1.3rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            white-space: nowrap;
+            transition: opacity 0.3s;
+        }
+
+        .sidebar.collapsed .logo-text {
+            opacity: 0;
+            width: 0;
+        }
+
+        .toggle-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #667eea;
+            transition: transform 0.3s;
+            padding: 0.5rem;
+            border-radius: 8px;
+        }
+
+        .toggle-btn:hover {
+            transform: scale(1.1);
+            background: rgba(102, 126, 234, 0.1);
+        }
+
+        .sidebar.collapsed .toggle-btn {
+            margin: 0 auto;
+            display: block;
+        }
+
+        .sidebar-nav {
+            flex: 1;
+            padding: 1rem 0;
+            overflow-y: auto;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem 1.5rem;
+            color: #555;
+            text-decoration: none;
+            transition: all 0.3s;
+            cursor: pointer;
+            border-left: 4px solid transparent;
+            position: relative;
+        }
+
+        .nav-item:hover {
+            background: rgba(102, 126, 234, 0.1);
+            color: #667eea;
+            border-left-color: #667eea;
+        }
+
+        .nav-item.active {
+            background: linear-gradient(90deg, rgba(102, 126, 234, 0.15) 0%, transparent 100%);
+            color: #667eea;
+            border-left-color: #667eea;
+            font-weight: 600;
+        }
+
+        .nav-icon {
+            font-size: 1.5rem;
+            min-width: 24px;
+            text-align: center;
+        }
+
+        .nav-text {
+            white-space: nowrap;
+            transition: opacity 0.3s;
+        }
+
+        .sidebar.collapsed .nav-text {
+            opacity: 0;
+            width: 0;
+        }
+
+        .sidebar-footer {
+            padding: 1rem 1.5rem;
+            border-top: 2px solid #f0f0f0;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 12px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .user-profile:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+
+        .user-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .user-name {
+            font-weight: 600;
+            font-size: 0.95rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .user-role {
+            font-size: 0.8rem;
+            opacity: 0.9;
+        }
+
+        .sidebar.collapsed .user-info {
+            display: none;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: 280px;
+            min-height: 100vh;
+            padding: 2rem;
+            transition: margin-left 0.3s ease;
+        }
+
+        .sidebar.collapsed + .main-content {
+            margin-left: 80px;
+        }
+
+        /* Top Header */
+        .top-header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .header-title h1 {
+            color: #333;
+            font-size: 1.8rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .header-title p {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .notification-btn {
+            position: relative;
+            background: white;
+            border: 2px solid #e0e0e0;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .notification-btn:hover {
+            border-color: #667eea;
+            color: #667eea;
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: #f44336;
+            color: white;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            font-size: 0.7rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+        }
+
+        .stat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 1rem;
+        }
+
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .stat-icon.purple { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
+        .stat-icon.green { background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%); color: white; }
+        .stat-icon.orange { background: linear-gradient(135deg, #FF9800 0%, #F57C00 100%); color: white; }
+        .stat-icon.blue { background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%); color: white; }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .stat-change {
+            font-size: 0.85rem;
+            color: #4CAF50;
+            margin-top: 0.5rem;
+        }
+
+        /* Content Sections */
+        .content-row {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .content-card {
+            background: white;
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .card-title {
+            font-size: 1.3rem;
+            color: #333;
+            font-weight: 700;
+        }
+
+        .card-action {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+        }
+
+        .card-action:hover {
+            color: #764ba2;
+        }
+
+        /* Activity Timeline */
+        .activity-item {
+            display: flex;
+            gap: 1rem;
+            padding: 1rem;
+            border-radius: 10px;
+            margin-bottom: 0.75rem;
+            transition: all 0.3s;
+        }
+
+        .activity-item:hover {
+            background: #f8f9fa;
+        }
+
+        .activity-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .activity-content {
+            flex: 1;
+        }
+
+        .activity-title {
+            color: #333;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .activity-time {
+            color: #999;
+            font-size: 0.85rem;
+        }
+
+        /* Meeting Cards */
+        .meeting-card {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+            border-radius: 12px;
+            padding: 1.25rem;
+            margin-bottom: 1rem;
+            border-left: 4px solid #667eea;
+            transition: all 0.3s;
+        }
+
+        .meeting-card:hover {
+            transform: translateX(5px);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.2);
+        }
+
+        .meeting-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 0.75rem;
+        }
+
+        .meeting-id {
+            font-weight: 700;
+            color: #667eea;
+            font-size: 1.1rem;
+        }
+
+        .meeting-badge {
+            background: #667eea;
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .meeting-badge.completed { background: #4CAF50; }
+        .meeting-badge.active { background: #FF9800; animation: pulse 2s infinite; }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .meeting-details {
+            color: #555;
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+
+        .meeting-details strong {
+            color: #333;
+        }
+
+        .meeting-actions {
+            margin-top: 0.75rem;
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .btn-small {
+            padding: 0.4rem 0.9rem;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-view {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-view:hover {
+            background: #764ba2;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: #999;
+        }
+
+        .empty-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .content-row {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .sidebar.mobile-open {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .mobile-overlay {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0,0,0,0.5);
+                z-index: 999;
+            }
+
+            .mobile-overlay.active {
+                display: block;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .mobile-menu-btn {
+                display: block !important;
+            }
+        }
+
+        .mobile-menu-btn {
+            display: none;
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            z-index: 998;
+            transition: transform 0.3s ease;
+        }
+        
+        .mobile-menu-btn:hover {
+            transform: scale(1.1);
+        }
+        
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        @keyframes slideOut {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(100%); opacity: 0; }
+        }
+        
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        .stat-card, .profile-card {
+            animation: fadeIn 0.5s ease forwards;
+        }
+        
+        .stat-card:nth-child(1) { animation-delay: 0.1s; opacity: 0; }
+        .stat-card:nth-child(2) { animation-delay: 0.2s; opacity: 0; }
+        .stat-card:nth-child(3) { animation-delay: 0.3s; opacity: 0; }
+        .stat-card:nth-child(4) { animation-delay: 0.4s; opacity: 0; }
+    </style>
+</head>
+<body>
+    <!-- Mobile Overlay -->
+    <div class="mobile-overlay" id="mobileOverlay" onclick="toggleSidebar()"></div>
+
+    <!-- Mobile Menu Button -->
+    <button class="mobile-menu-btn" onclick="toggleSidebar()">☰</button>
+
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="logo-section">
+                <div class="logo-icon">⚖️</div>
+                <div class="logo-text">Nyaya-Sahayak</div>
+            </div>
+            <button class="toggle-btn" onclick="toggleSidebar()">☰</button>
+        </div>
+
+        <nav class="sidebar-nav">
+            <a href="dashboard.html" class="nav-item active">
+                <span class="nav-icon">📊</span>
+                <span class="nav-text">Dashboard</span>
+            </a>
+            <a href="meeting-lobby.html" class="nav-item">
+                <span class="nav-icon">🎥</span>
+                <span class="nav-text">Meetings</span>
+            </a>
+            <a href="documents.html" class="nav-item">
+                <span class="nav-icon">📄</span>
+                <span class="nav-text">Documents</span>
+            </a>
+            <a href="profile.html" class="nav-item">
+                <span class="nav-icon">👤</span>
+                <span class="nav-text">Profile</span>
+            </a>
+            <a href="settings.html" class="nav-item">
+                <span class="nav-icon">⚙️</span>
+                <span class="nav-text">Settings</span>
+            </a>
+            <a href="#" onclick="handleLogout(); return false;" class="nav-item">
+                <span class="nav-icon">🚪</span>
+                <span class="nav-text">Logout</span>
+            </a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="user-profile" onclick="window.location.href='profile.html'">
+                <div class="user-avatar" id="sidebarAvatar">U</div>
+                <div class="user-info">
+                    <div class="user-name" id="sidebarName">User Name</div>
+                    <div class="user-role" id="sidebarRole">Role</div>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Top Header -->
+        <div class="top-header">
+            <div class="header-title">
+                <h1>Welcome back, <span id="headerUserName">User</span>! 👋</h1>
+                <p id="lastLogin">Last login: Just now</p>
+            </div>
+            <div class="header-actions">
+                <button class="notification-btn" onclick="refreshDashboard()" title="Refresh Data">
+                    <span style="font-size: 1.2rem;">🔄</span>
+                </button>
+                <button class="notification-btn">
+                    <span style="font-size: 1.2rem;">🔔</span>
+                    <span class="notification-badge" id="notificationCount" style="display: none;">0</span>
+                </button>
+                <button class="btn-primary" onclick="window.location.href='meeting-lobby.html'">
+                    <span>➕</span>
+                    <span>New Meeting</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Stats Grid -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div>
+                        <div class="stat-value" id="totalMeetings">0</div>
+                        <div class="stat-label">Total Meetings</div>
+                    </div>
+                    <div class="stat-icon purple">🎥</div>
+                </div>
+                <div class="stat-change">↗ All time</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div>
+                        <div class="stat-value" id="documentsAnalyzed">0</div>
+                        <div class="stat-label">Documents Analyzed</div>
+                    </div>
+                    <div class="stat-icon green">📄</div>
+                </div>
+                <div class="stat-change">↗ All time</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div>
+                        <div class="stat-value" id="totalHours">0</div>
+                        <div class="stat-label">Hours in Court</div>
+                    </div>
+                    <div class="stat-icon orange">⏱️</div>
+                </div>
+                <div class="stat-change">↗ This month</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div>
+                        <div class="stat-value" id="accountAge">0</div>
+                        <div class="stat-label">Days Active</div>
+                    </div>
+                    <div class="stat-icon blue">📅</div>
+                </div>
+                <div class="stat-change">Since registration</div>
+            </div>
+        </div>
+
+        <!-- Content Row -->
+        <div class="content-row">
+            <!-- Recent Activity -->
+            <div class="content-card">
+                <div class="card-header">
+                    <h2 class="card-title">Recent Activity</h2>
+                    <a href="#" class="card-action">View All</a>
+                </div>
+                <div id="activityList">
+                    <div class="empty-state">
+                        <div class="empty-icon">📊</div>
+                        <p>No recent activity yet.<br>Start by creating a meeting or analyzing a document!</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Upcoming Meetings -->
+            <div class="content-card">
+                <div class="card-header">
+                    <h2 class="card-title">Upcoming</h2>
+                    <a href="meeting-lobby.html" class="card-action">See All</a>
+                </div>
+                <div id="upcomingMeetings">
+                    <div class="empty-state">
+                        <div class="empty-icon">🎥</div>
+                        <p>No upcoming meetings</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Meetings -->
+        <div class="content-card">
+            <div class="card-header">
+                <h2 class="card-title">Recent Meetings</h2>
+                <a href="meeting-lobby.html" class="card-action">View All</a>
+            </div>
+            <div id="recentMeetings">
+                <div class="empty-state">
+                    <div class="empty-icon">🎥</div>
+                    <p>You haven't joined any meetings yet.<br>Create your first meeting to get started!</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const API_URL = CONFIG.API_URL;
+        let currentUser = null;
+
+        // Toggle Sidebar
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('mobileOverlay');
+            
+            if (window.innerWidth <= 768) {
+                sidebar.classList.toggle('mobile-open');
+                overlay.classList.toggle('active');
+            } else {
+                sidebar.classList.toggle('collapsed');
+            }
+        }
+
+        // Check Authentication
+        function checkAuth() {
+            const token = localStorage.getItem('authToken');
+            const userStr = localStorage.getItem('user');
+
+            if (!token || !userStr) {
+                window.location.href = 'login.html';
+                return null;
+            }
+
+            return JSON.parse(userStr);
+        }
+
+        // Load Dashboard Data
+        async function loadDashboard() {
+            currentUser = checkAuth();
+            if (!currentUser) return;
+
+            // Update UI with user info
+            document.getElementById('headerUserName').textContent = currentUser.name;
+            document.getElementById('sidebarName').textContent = currentUser.name;
+            document.getElementById('sidebarRole').textContent = currentUser.role;
+            
+            // Get proper initials (first letter of first and last name)
+            const nameParts = currentUser.name.split(' ');
+            const initials = nameParts.length > 1 
+                ? (nameParts[0][0] + nameParts[nameParts.length - 1][0]).toUpperCase()
+                : currentUser.name.substring(0, 2).toUpperCase();
+            document.getElementById('sidebarAvatar').textContent = initials;
+
+            // Calculate account age
+            if (currentUser.created_at) {
+                const createdDate = new Date(currentUser.created_at);
+                const today = new Date();
+                const daysActive = Math.floor((today - createdDate) / (1000 * 60 * 60 * 24));
+                document.getElementById('accountAge').textContent = daysActive || 1;
+            }
+
+            // Show loading state
+            showLoadingStats();
+
+            // Load user data
+            await Promise.all([
+                loadUserStats(),
+                loadRecentActivity(),
+                loadRecentMeetings()
+            ]);
+        }
+        
+        // Show loading state for stats
+        function showLoadingStats() {
+            document.getElementById('totalMeetings').innerHTML = '<span style="opacity: 0.5">...</span>';
+            document.getElementById('documentsAnalyzed').innerHTML = '<span style="opacity: 0.5">...</span>';
+            document.getElementById('totalHours').innerHTML = '<span style="opacity: 0.5">...</span>';
+        }
+        
+        // Refresh Dashboard
+        async function refreshDashboard() {
+            const refreshBtn = event.target.closest('button');
+            refreshBtn.style.animation = 'spin 1s linear';
+            
+            showLoadingStats();
+            await Promise.all([
+                loadUserStats(),
+                loadRecentActivity(),
+                loadRecentMeetings()
+            ]);
+            
+            setTimeout(() => {
+                refreshBtn.style.animation = '';
+            }, 1000);
+            
+            // Show success notification
+            showNotification('✓ Data refreshed successfully');
+        }
+        
+        // Show notification
+        function showNotification(message) {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+                padding: 12px 24px;
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                z-index: 10000;
+                font-weight: 600;
+                animation: slideIn 0.3s ease;
+            `;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.animation = 'slideOut 0.3s ease';
+                setTimeout(() => notification.remove(), 300);
+            }, 2000);
+        }
+
+        // Load User Stats
+        async function loadUserStats() {
+            try {
+                const token = localStorage.getItem('authToken');
+                const response = await fetch(`${API_URL}/api/user/${currentUser.id}/stats`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    
+                    // Animate the numbers
+                    animateValue('totalMeetings', 0, data.stats.totalMeetings || 0, 1000);
+                    animateValue('documentsAnalyzed', 0, data.stats.documentsAnalyzed || 0, 1000);
+                    animateValue('totalHours', 0, data.stats.totalHours || 0, 1000);
+                } else {
+                    // Set to 0 if endpoint fails
+                    document.getElementById('totalMeetings').textContent = '0';
+                    document.getElementById('documentsAnalyzed').textContent = '0';
+                    document.getElementById('totalHours').textContent = '0';
+                }
+            } catch (error) {
+                console.error('Error loading stats:', error);
+                // Set default values
+                document.getElementById('totalMeetings').textContent = '0';
+                document.getElementById('documentsAnalyzed').textContent = '0';
+                document.getElementById('totalHours').textContent = '0';
+            }
+        }
+
+        // Animate number counting
+        function animateValue(id, start, end, duration) {
+            const element = document.getElementById(id);
+            const range = end - start;
+            const increment = range / (duration / 16);
+            let current = start;
+            
+            const timer = setInterval(() => {
+                current += increment;
+                if ((increment > 0 && current >= end) || (increment < 0 && current <= end)) {
+                    element.textContent = Math.round(end * 10) / 10;
+                    clearInterval(timer);
+                } else {
+                    element.textContent = Math.round(current * 10) / 10;
+                }
+            }, 16);
+        }
+
+        // Load Recent Activity
+        async function loadRecentActivity() {
+            try {
+                const token = localStorage.getItem('authToken');
+                const response = await fetch(`${API_URL}/api/user/${currentUser.id}/activity`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    displayActivity(data.activities || []);
+                }
+            } catch (error) {
+                console.log('Activity loading:', error);
+            }
+        }
+
+        // Display Activity
+        function displayActivity(activities) {
+            const activityList = document.getElementById('activityList');
+            
+            if (activities.length === 0) {
+                activityList.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">📊</div>
+                        <p>No recent activity yet.<br>Start by creating a meeting or analyzing a document!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            activityList.innerHTML = activities.slice(0, 5).map(activity => `
+                <div class="activity-item">
+                    <div class="activity-icon">${activity.icon || '📌'}</div>
+                    <div class="activity-content">
+                        <div class="activity-title">${activity.description}</div>
+                        <div class="activity-time">${formatTime(activity.timestamp)}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Load Recent Meetings
+        async function loadRecentMeetings() {
+            try {
+                const token = localStorage.getItem('authToken');
+                const response = await fetch(`${API_URL}/api/user/${currentUser.id}/meetings`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    displayMeetings(data.meetings || []);
+                }
+            } catch (error) {
+                console.log('Meetings loading:', error);
+            }
+        }
+
+        // Display Meetings
+        function displayMeetings(meetings) {
+            const meetingsList = document.getElementById('recentMeetings');
+            
+            if (meetings.length === 0) {
+                meetingsList.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">🎥</div>
+                        <p>You haven't joined any meetings yet.<br>Create your first meeting to get started!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            meetingsList.innerHTML = meetings.slice(0, 3).map(meeting => `
+                <div class="meeting-card">
+                    <div class="meeting-header">
+                        <div class="meeting-id">Meeting #${meeting.meeting_id}</div>
+                        <div class="meeting-badge ${meeting.status}">${meeting.status}</div>
+                    </div>
+                    <div class="meeting-details">
+                        <strong>Role:</strong> ${meeting.role}<br>
+                        <strong>Date:</strong> ${formatDate(meeting.date)}<br>
+                        <strong>Duration:</strong> ${meeting.duration || 'N/A'}
+                    </div>
+                    ${meeting.status === 'completed' ? `
+                        <div class="meeting-actions">
+                            <button class="btn-small btn-view" onclick="viewTranscript('${meeting.meeting_id}')">View Transcript</button>
+                        </div>
+                    ` : ''}
+                </div>
+            `).join('');
+        }
+
+        // Format Time
+        function formatTime(timestamp) {
+            try {
+                const date = new Date(timestamp);
+                const now = new Date();
+                const diff = now - date;
+                const minutes = Math.floor(diff / 60000);
+                const hours = Math.floor(minutes / 60);
+                const days = Math.floor(hours / 24);
+
+                if (minutes < 1) return 'Just now';
+                if (minutes < 60) return `${minutes} minutes ago`;
+                if (hours < 24) return `${hours} hours ago`;
+                if (days < 7) return `${days} days ago`;
+                return date.toLocaleDateString();
+            } catch (e) {
+                return timestamp;
+            }
+        }
+
+        // Format Date
+        function formatDate(dateStr) {
+            try {
+                const date = new Date(dateStr);
+                return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+            } catch (e) {
+                return dateStr;
+            }
+        }
+
+        // Logout
+        async function handleLogout() {
+            const token = localStorage.getItem('authToken');
+            
+            if (token) {
+                try {
+                    await fetch(`${API_URL}/api/auth/logout`, {
+                        method: 'POST',
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                } catch (error) {
+                    console.error('Logout error:', error);
+                }
+            }
+            
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('user');
+            window.location.href = 'login.html';
+        }
+
+        // View Transcript
+        function viewTranscript(meetingId) {
+            // TODO: Implement transcript viewing
+            alert(`Viewing transcript for meeting ${meetingId}`);
+        }
+
+        // Load dashboard on page load
+        window.addEventListener('load', loadDashboard);
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            if (window.innerWidth > 768) {
+                document.getElementById('mobileOverlay').classList.remove('active');
+                document.getElementById('sidebar').classList.remove('mobile-open');
+            }
+        });
+    </script>
+</body>
+</html>

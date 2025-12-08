@@ -1,0 +1,32 @@
+[
+  {
+    "id": 1,
+    "email": "sunny@test.com",
+    "password": "787d365c720455bb85cdfe2a6fee5469bc0f4b0861ce3b45df4e1c891413f4dc",
+    "name": "sunny",
+    "role": "Other",
+    "created_at": "2025-12-08 21:20:27"
+  },
+  {
+    "id": 2,
+    "email": "sun@test.com",
+    "password": "6ea456e9eab77c6cc457065d43f96f1f226dca377157d77a7194cd28ffc1fdda",
+    "name": "Alpha",
+    "role": "student",
+    "created_at": "2025-12-08 22:33:07",
+    "phone": "",
+    "organization": "",
+    "bio": ""
+  },
+  {
+    "id": 3,
+    "email": "ss@gmail.com",
+    "password": "6ea456e9eab77c6cc457065d43f96f1f226dca377157d77a7194cd28ffc1fdda",
+    "name": "Sunny",
+    "role": "student",
+    "created_at": "2025-12-08 22:54:02",
+    "phone": "",
+    "organization": "",
+    "bio": ""
+  }
+]
